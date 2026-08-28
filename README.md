@@ -1,6 +1,6 @@
 # Box Vela
 
-> 运行在 Xiaomi Vela OS 上的独立工具箱快应用。
+> 运行在 Xiaomi Vela OS 上的独立工具箱快应用。（Vibe Coding）
 
 ![Build Status](https://github.com/MMCKB/Box-Vela/actions/workflows/build.yml/badge.svg)
 [![GitHub Release](https://img.shields.io/github/v/release/MMCKB/Box-Vela)](https://github.com/MMCKB/Box-Vela/releases)

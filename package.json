@@ -1,0 +1,31 @@
+{
+  "name": "box-vela",
+  "version": "1.0.0",
+  "description": "Box Vela - 运行在 Xiaomi Vela OS 上的独立工具箱快应用（提取自 HyperBilibili-Next 工具箱）",
+  "engines": {
+    "yarn": ">=1.22.0"
+  },
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "start": "aiot server --watch --open-nuttx",
+    "build": "aiot build --enable-jsc",
+    "release": "aiot release --enable-jsc",
+    "watch": "aiot watch --open-nuttx",
+    "lint": "eslint --format codeframe --fix --ext .ux,.js src/",
+    "postinstall": "node -e \"if (process.env.npm_execpath && !process.env.npm_execpath.includes('yarn')) { console.error('Please use Yarn to install dependencies!'); process.exit(1); }\""
+  },
+  "devDependencies": {
+    "@aiot-toolkit/jsc": "^1.0.7",
+    "aiot-toolkit": "2.0.4-beta.3",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "less": "^4.2.2",
+    "less-loader": "^12.2.0",
+    "prettier": "^3.4.2",
+    "stylelint": "^16.13.2"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13"
+  }
+}

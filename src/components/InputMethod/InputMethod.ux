@@ -1,0 +1,1421 @@
+<template>
+  <div class="page" style="flex-direction: column;" show="{{!hide}}">
+    <div style="background-color:black" >
+      <!-- 圆屏62 -->
+      <div if="{{screentype==='circle'}}" style="width: 480px;height: 321px;">
+        <!-- 全键盘 -->
+		<!-- 这里是480px圆表屏幕的键盘 -->
+        <div id="full-keyboard" if="{{keyboardtype!='T9'}}" style="width: 480px;height: 321px;">
+          <img src="./assets/full/back2.png" style="position: absolute;top:38px;left:7px;width:466px;height:52px;" @click="onBtnClick('switchCn')" show="{{numFlag}}" />
+          <img src="./assets/full/123.png" style="position: absolute;top:266px;left:119px;width:120px;height:48px;" @click="onBtnClick('switchNum')" show="{{downFlag==='' && !numFlag && lang==='cn'}}" />
+          <img src="./assets/full/bigA.png" style="position: absolute;top:266px;left:119px;width:120px;height:48px;" @click="onBtnClick('switchLow')" show="{{downFlag==='' && upperFlag && lang==='en'}}" />
+          <img src="./assets/full/A.png" style="position: absolute;top:266px;left:119px;width:120px;height:48px;" @click="onBtnClick('switchUpper')" show="{{downFlag==='' && !upperFlag && lang==='en'}}" />
+          <div style="position: absolute;top:38px;left:78px;width:324px;height:52px;background-color:rgb(38,38,38);border-radius: 12px;border: 3px solid #333333" show="{{downFlag===''&& !numFlag}}"></div>
+          <img show="{{resultList.length > 0}}" style="position: absolute;top:43px;left:355px;" src="./assets/full/down.png" @click="onBtnClick('down')" />
+          <!-- 带变量的相对路径在 aiot-tookit 2.0.4 中修复 -->
+          <img src="./assets/full/{{lang}}.png" style="position: absolute;top:38px;left:7px;width:67px;height:52px;" @click="onBtnClick('lang')" show="{{downFlag==='' && !numFlag}}" />
+          <div style="position: absolute;top:-4px;left:78px;width:324px;" show="{{downFlag==='' && !numFlag && cval}}">
+            <text class="caltext" style="width:296px;"> {{cval}}_ </text>
+          </div>
+          <div style="position: absolute;top:38px;left:80px;width:277px" show="{{lang === 'cn'&& !numFlag}}">
+            <div class="item column center" for="{{cvalList}}">
+              <input show='{{resultList.length > $idx}}' class="calbtn0" type="button" value="{{resultList[$idx]}}" @click="onRsSelect(resultList[$idx], $idx)" />
+            </div>
+          </div>
+          <div style="position: absolute;top:38px;left:80px;width:320px;height:52px;align-content: center;align-items: center;justify-content: center" show="{{downFlag==='' && !numFlag && lang==='en'}}" @click="onBtnClick('switchNum')" >
+            <img src="./assets/full/123_boardless.png" />
+          </div>
+          <!-- 这里使用show会导致每次输入都会加载全部候选列表，很卡 -->
+          <list class="list3" if="{{downFlag==='down'}}">
+            <list-item type="waitingRows62t9" class="item3" for="{{itemArray in resultList2}}">
+              <div class="item column center" style="height:52px;" for="{{item in itemArray}}">
+                <input class="calbtn0" type="button" value="{{item}}" @click="onRsSelect(item)" />
+              </div>
+            </list-item>
+          </list>
+          <div style="position: absolute;top:95px;left:8px;width:464px;height:52px;" show="{{downFlag===''&&!numFlag}}">
+            <img src="./assets/full/Q.png" style="width:54px;height:52px;margin-right: 4px;" @click="onSelect('Q')" />
+            <text class="calbtnfull" for="{{item in keys['full62'][0]}}" @click="onSelect(item)">{{item}}</text>
+            <img src="./assets/full/P.png" style="width:54px;height:52px;" @click="onSelect('P')" />
+          </div>
+          <div style="position: absolute;top:152px;left:23px;width:438px;height:52px;" show="{{downFlag===''&&!numFlag}}">
+            <img src="./assets/full/btA.png" style="width:60px;height:52px;margin-right: 4px;" @click="onSelect('A')" />
+            <text class="calbtnfull" for="{{item in keys['full62'][1]}}" @click="onSelect(item)">{{item}}</text>
+            <img src="./assets/full/L.png" style="width:60px;height:52px;" @click="onSelect('L')" />
+          </div>
+          <div style="position: absolute;top:209px;left:56px;width:368px;height:52px;" show="{{downFlag===''&&!numFlag}}">
+            <img src="./assets/full/Z.png" style="width:72px;height:52px;margin-right: 4px;" @click="onSelect('Z')" />
+            <text class="calbtnfull" for="{{item in keys['full62'][2]}}" @click="onSelect(item)">{{item}}</text>
+            <img src="./assets/full/M.png" style="width:72px;height:52px;" @click="onSelect('M')" />
+          </div>
+          <div style="position: absolute;top:95px;left:8px;width:464px;height:52px;" show="{{numFlag}}">
+            <img src="./assets/full/1.png" style="width:54px;height:52px;margin-right: 4px;" @click="onSelect('1')" />
+            <text class="calbtnfull" for="{{item in keys['sign62'][0]}}" @click="onSelect(item)">{{item}}</text>
+            <img src="./assets/full/0.png" style="width:54px;height:52px;" @click="onSelect('0')" />
+          </div>
+          <div style="position: absolute;top:152px;left:23px;width:438px;height:52px;" show="{{numFlag}}">
+            <img src="./assets/full/2-1.png" style="width:60px;height:52px;margin-right: 4px;" @click="onSelect('~')" />
+            <text class="calbtnfull" for="{{item in keys['sign62'][1]}}" @click="onSelect(item)">{{item}}</text>
+            <img src="./assets/full/2-2.png" style="width:60px;height:52px;" @click="onSelect('?')" />
+          </div>
+          <div style="position: absolute;top:209px;left:56px;width:368px;height:52px;" show="{{numFlag}}">
+            <img src="./assets/full/3-1.png" style="width:72px;height:52px;margin-right: 4px;" @click="onSelect('(')" />
+            <text class="calbtnfull" for="{{item in keys['sign62'][2]}}" @click="onSelect(item)">{{item}}</text>
+            <img src="./assets/full/3-2.png" style="width:72px;height:52px;" @click="onSelect('、')" />
+          </div>
+          <img src="./assets/full/del.png" style="position: absolute;top:38px;left:406px;width:67px;height:52px;" @click="onBtnClick('D')" show="{{downFlag==='' && !numFlag }}" />
+          <img src="./assets/full/space.png" style="position: absolute;top:266px;left:242px;width:120px;height:48px;" @click="onBtnClick('space')" show="{{downFlag==='' && !numFlag }}" />
+          <img src="./assets/full/4-2.png" style="position: absolute;top:266px;left:242px;width:120px;height:48px;" @click="onSelect('。')" show="{{numFlag }}" />
+          <img src="./assets/full/4-1.png" style="position: absolute;top:266px;left:119px;width:120px;height:48px;" @click="onSelect('，')" show="{{numFlag }}" />
+          <img style="position: absolute;top:204px;left:78px;" src="./assets/full/up.png" @click="onBtnClick('down')" show="{{downFlag==='down'}}" />
+        </div>
+        <!-- 九键 -->
+        <div else style="width: 480px;height: 321px;">
+          <img src="./assets/t9/back2.png" style="position: absolute;top:35px;left:31px;width: 60px;height: 60px;" @click="onBtnClick('switchCn')" show="{{numFlag}}" />
+          <img src="./assets/t9/123.png" style="position: absolute;top:99px;left:31px;width: 60px;height: 60px;" @click="onBtnClick('switchNum')" show="{{downFlag==='' && !numFlag && lang==='cn'}}" />
+          <img src="./assets/t9/bigA.png" style="position: absolute;top:99px;left:31px;width: 60px;height: 60px;" @click="onBtnClick('switchLow')" show="{{downFlag==='' && !numFlag && upperFlag && lang==='en'}}" />
+          <img src="./assets/t9/a.png" style="position: absolute;top:99px;left:31px;width: 60px;height: 60px;" @click="onBtnClick('switchUpper')" show="{{downFlag==='' && !numFlag && !upperFlag && lang==='en'}}" />
+          <div style="position: absolute;top:35px;left:95px;width:290px;height:60px;background-color:rgb(38,38,38);border-radius: 999px;border: 3px solid #333333" show="{{downFlag===''&& !numFlag}}"></div>
+          <img show="{{resultList.length > 0}}" style="position: absolute;top:44px;left:338px;" src="./assets/full/down.png" @click="onBtnClick('down')" />
+          <!-- 带变量的相对路径在 aiot-tookit 2.0.4 中修复 -->
+          <img src="./assets/t9/{{lang}}.png" style="position: absolute;top:35px;left:31px;width: 60px;height: 60px;" @click="onBtnClick('lang')" show="{{downFlag==='' && !numFlag}}" />
+          <div style="position: absolute;top:-4px;left:95px;width:145px;height:40px;" show="{{downFlag==='' && !numFlag && cval}}">
+            <text class="caltext" style="width:145px;"> {{cval}}_ </text>
+          </div>
+          <div show="{{downFlag==='' && !numFlag}}" style="position: absolute;top:-4px;left:240px;width:145px;height:40px;justify-content:flex-end">
+            <text for="{{waitingList}}" class="waiting-keys" style="color:{{$idx===waitingIndex ? 'rgb(13,132,255)' : 'white'}};" @click="onSelectWaiting($idx)">{{waitingList[$idx]}}</text>
+          </div>
+          <div style="position: absolute;top:39px;left:105px;width:233px" show="{{lang === 'cn'&& !numFlag}}">
+            <div class="item column center" for="{{cvalList}}">
+              <input show='{{resultList.length > $idx}}' class="calbtn0" type="button" value="{{resultList[$idx]}}" @click="onRsSelect(resultList[$idx], $idx)" />
+            </div>
+          </div>
+          <div style="position: absolute;top:35px;left:95px;width:290px;height:60px;align-content: center;align-items: center;justify-content: center" show="{{downFlag==='' && !numFlag && lang==='en'}}" @click="onBtnClick('switchNum')" >
+            <img src="./assets/full/123_boardless.png" />
+          </div>
+          <!-- 这里使用show会导致每次输入都会加载全部候选列表，很卡 -->
+          <list class="list3" if="{{downFlag==='down'}}">
+            <list-item type="waitingRows62full" class="item3" for="{{itemArray in resultList2}}">
+              <div class="item column center" style="height:52px;" for="{{item in itemArray}}">
+                <input class="calbtn0" type="button" value="{{item}}" @click="onRsSelect(item)" />
+              </div>
+            </list-item>
+          </list>
+          <div style="position: absolute;top:99px;left:95px;width:294px;height:60px;" show="{{downFlag===''&&!numFlag}}">
+            <text class="calbtnt9" @click="onSelect('select')">选择</text>
+            <text class="calbtnt9" for="{{item in keys['t9'][0]}}" @click="onSelect(item)">{{item.toUpperCase()}}</text>
+          </div>
+          <div style="position: absolute;top:163px;left:95px;width:294px;height:60px;" show="{{downFlag===''&&!numFlag}}">
+            <text class="calbtnt9" for="{{item in keys['t9'][1]}}" @click="onSelect(item)">{{item.toUpperCase()}}</text>
+          </div>
+          <div style="position: absolute;top:227px;left:95px;width:294px;height:60px;" show="{{downFlag===''&&!numFlag}}">
+            <text class="calbtnt9" for="{{item in keys['t9'][2]}}" @click="onSelect(item)">{{item.toUpperCase()}}</text>
+          </div>
+          <div style="position: absolute;top:35px;left:95px;width:294px;height:60px;" show="{{numFlag}}">
+            <text class="calbtnt9" @click="onSelect('7')">7</text>
+            <text class="calbtnt9" @click="onSelect('8')">8</text>
+            <text class="calbtnt9" @click="onSelect('9')">9</text>
+          </div>
+          <div style="position: absolute;top:99px;left:95px;width:294px;height:60px;" show="{{numFlag}}">
+            <text class="calbtnt9" @click="onSelect('4')">4</text>
+            <text class="calbtnt9" @click="onSelect('5')">5</text>
+            <text class="calbtnt9" @click="onSelect('6')">6</text>
+          </div>
+          <div style="position: absolute;top:163px;left:95px;width:294px;height:60px;" show="{{numFlag}}">
+            <text class="calbtnt9" @click="onSelect('1')">1</text>
+            <text class="calbtnt9" @click="onSelect('2')">2</text>
+            <text class="calbtnt9" @click="onSelect('3')">3</text>
+          </div>
+          <div style="position: absolute;top:227px;left:95px;width:294px;height:60px;" show="{{numFlag}}">
+            <text class="calbtnt9" @click="onSelect('，')">，</text>
+            <text class="calbtnt9" @click="onSelect('0')">0</text>
+            <text class="calbtnt9" @click="onSelect('。')">。</text>
+          </div>
+          <img src="./assets/t9/del.png" style="position: absolute;top:35px;left:389px;width: 60px;height: 60px;" @click="onBtnClick('D')" show="{{downFlag==='' }}" />
+          <img src="./assets/t9/space.png" style="position: absolute;top:99px;left:389px;width: 60px;height: 60px;" @click="onBtnClick('space')" show="{{downFlag==='' && !numFlag }}" />
+          <img style="position: absolute;top:204px;left:78px;" src="./assets/full/up.png" @click="onBtnClick('down')" show="{{downFlag==='down'}}" />
+        </div>
+      </div>
+      <!-- 方屏67 -->
+      <div if="{{screentype==='rect'}}" style="width: 100%;height: 286px;flex-direction: column;background-color:{{rectThemeBackground}}">
+        <!-- 九键中文 -->
+        <div if="{{rectKeyboardtype=='T9' && !numFlag}}" style="position:absolute;top:-11px;width:100%;height:310px;justify-content: center;">
+          <div style="top:110px;height:189px;width:100%;align-items: stretch;justify-content: space-between;flex-direction: column;padding:6px 3px">
+            <div class="keyboard-rows-rect-t9">
+              <!-- 手机式九键左上角空格键；中文候选仍通过顶部候选栏直接点按确认。 -->
+              <text class="calbtnt9 calbtnt9-rect" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('space')">空格</text>
+              <text class="calbtnt9 calbtnt9-rect" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['t9'][0]}}" @click="onSelect(item)">{{item.toUpperCase()}}</text>
+            </div>
+            <div class="keyboard-rows-rect-t9">
+              <text class="calbtnt9 calbtnt9-rect" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['t9'][1]}}" @click="onSelect(item)">{{item.toUpperCase()}}</text>
+            </div>
+            <div class="keyboard-rows-rect-t9">
+              <text class="calbtnt9 calbtnt9-rect" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['t9'][2]}}" @click="onSelect(item)">{{item.toUpperCase()}}</text>
+            </div>
+          </div>
+        </div>
+        <div else style="position:absolute;top:-11px;width:100%;height:310px;justify-content: center">
+          <progress percent="{{percent67}}" style="position:absolute;bottom: 18px;width:80px;color:{{rectThemeText}};stroke-width:6px;layer-color:{{rectThemeProgress}};"></progress>
+          <scroll id="keyboard67" scroll-x="{{true}}" onscroll="handelScroll">
+            <div if="{{!numFlag}}" style="left: 6px; flex-direction: column;">
+              <div static style="margin-left: 0px;margin-top: 0px;height: 60px;">
+                <text class="calbtn67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['full'][0]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 32px;margin-top: -5px;height: 60px;">
+                <text class="calbtn67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['full'][1]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 64px;margin-top: -5px;height: 60px;">
+                <text class="calbtn67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['full'][2]}}" @click="onSelect(item)">{{item}}</text>
+                <text class="rect-theme-space-key" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('space')">空格</text>
+              </div>
+            </div>
+            <div else style="left: 6px; flex-direction: column;">
+              <div static style="margin-left: 0px;margin-top: 0px;height: 60px;">
+                <text class="calbtn67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['sign'][0]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 32px;margin-top: -5px;height: 60px;">
+                <text class="calbtn67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['sign'][1]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 64px;margin-top: -5px;height: 60px;">
+                <text class="calbtn67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" for="{{item in keys['sign'][2]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+            </div>
+          </scroll>
+        </div>
+        <!-- 方屏候选栏下方的紧凑五键栏；候选栏保持原位，仅为本栏预留键盘空间。 -->
+        <div class="rect-five-key-bar" style="width:{{screenWidth - 12}}px;" if="{{downFlag==='' && rectPanel==='' }}">
+          <text class="rect-five-key-enter" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('cursorEnter')">回车</text>
+          <div class="rect-five-key-directions">
+            <text class="rect-five-key-direction" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('cursorUp')">↑</text>
+            <text class="rect-five-key-direction" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('cursorDown')">↓</text>
+            <text class="rect-five-key-direction" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('cursorLeft')">←</text>
+            <text class="rect-five-key-direction" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('cursorRight')">→</text>
+          </div>
+        </div>
+        <div style="width: 100%; flex-direction: row; justify-content: center; top:0px; padding:0 6px;">
+          <text class="rect-switch-trigger" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="openRectPanel('switch')" if="{{downFlag==='' && !numFlag}}">切换</text>
+          <!-- 简繁快捷切换：仅中文全键和中文九键显示，文字同时标识当前候选字形。 -->
+          <text class="rect-traditional-trigger" if="{{lang==='cn' && !numFlag}}" style="background-color:{{rectTraditionalInput ? rectThemeAccent : rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="toggleRectTraditionalInput">{{rectTraditionalInput ? '繁' : '简'}}</text>
+          <div if="{{lang === 'cn' && !numFlag}}" style="margin-left: 6px;flex: 1;height: 56px;background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}}; border-width: 3px; border-radius: 100px;flex-direction: row;align-items:center">
+            <scroll id="cvalWaiting" scroll-x="{{true}}" style="position:absolute;width: 85%;height: 42px;">
+              <div static style="position: absolute;left: 0px;height: 42px;padding-left:20px;padding-right:20px">
+                <text class="calbtn02" style="padding-right:10px;color:{{rectThemeText}}" @click="pushCval">{{rectKeyboardtype==='T9' ? t9Digits : cval}}</text>
+                <text for="{{cvalList}}" show="{{resultList.length > $idx}}" class="calbtn02" style="padding-right:10px;color:{{rectThemeText}}" @click="onRsSelect(resultList[$idx], $idx)">{{resultList[$idx]}}</text>
+              </div>
+            </scroll>
+            <text if="{{resultList.length > 0}}" class="rect-theme-candidate-toggle" style="position:absolute;right: 8px;background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('down')">⌄</text>
+          </div>
+        
+          <img src="./assets/horizontal/bigA.png" style="padding: 6px;margin-left: 6px;width:94px;height:56px;" @click="onBtnClick('switchLow')" if="{{downFlag==='' && upperFlag && lang==='en'&& !numFlag}}" />
+          <img src="./assets/horizontal/a.png" style="padding: 6px;margin-left: 6px;width:94px;height:56px;" @click="onBtnClick('switchUpper')" if="{{downFlag==='' && !upperFlag && lang==='en'&& !numFlag}}" />
+          <text class="rect-theme-control-key" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('switchNum')" if="{{downFlag==='' && !numFlag && lang==='en'}}">123</text>
+          <!-- 从方屏切换页进入数字键盘时，原返回键位置改为切换键；英文数字入口仍保留原返回键。 -->
+          <text class="rect-switch-trigger" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="openRectPanel('switch')" if="{{numFlag && rectNumFromSwitch}}">切换</text>
+          <text class="rect-theme-back-key" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('switchCn')" if="{{numFlag && !rectNumFromSwitch}}">返回</text>
+          <text if="{{!numFlag}}" class="rect-theme-delete-key" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('D')">⌫</text>
+          <text else class="rect-theme-delete-key" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('D')">⌫</text>
+        </div>
+        <!-- 方屏中文九键展开：左侧选择拼音，右侧仅显示所选拼音对应的候选。 -->
+        <div class="rect-t9-expand-overlay" style="background-color:{{rectThemeBackground}}" if="{{downFlag==='down' && screentype==='rect' && lang==='cn' && !numFlag && rectKeyboardtype==='T9'}}">
+          <div static class="rect-t9-expand-content">
+            <scroll class="rect-t9-pinyin-pane" style="background-color:{{rectThemeMutedSurface}};border-color:{{rectThemeBorder}}" scroll-y="{{true}}">
+              <div style="width:100%;flex-direction:column;">
+                <text for="{{t9PinyinGroups}}" class="rect-t9-pinyin-item" style="background-color:{{$idx===t9SelectedPinyinIndex ? rectThemeAccent : 'transparent'}};color:{{rectThemeText}}" @click="selectT9Pinyin($idx)">{{t9PinyinGroups[$idx].pinyin}}</text>
+              </div>
+            </scroll>
+            <div class="rect-t9-hanzi-pane" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}}">
+              <list static style="width:100%;height:100%;">
+                <list-item type="t9PinyinRows67" class="item67" for="{{itemArray in t9SelectedRows}}">
+                  <div class="item column center" for="{{item in itemArray}}">
+                    <input class="calbtn02" style="color:{{rectThemeText}}" type="button" value="{{item.text}}" @click="onT9PinyinHanziSelect(item)" />
+                  </div>
+                </list-item>
+              </list>
+            </div>
+          </div>
+          <text class="rect-theme-expand-toggle" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('down')">⌃</text>
+        </div>
+        <!-- 其他布局继续使用原候选展开列表。 -->
+        <div style="position: absolute;left: 0px;top: 0px;width: 100%;height: {{screentype==='rect' ? 286 : 252}}px;background-color:{{screentype==='rect' ? rectThemeBackground : 'black'}}; justify-content:center; flex-direction:column; align-items:center" if="{{downFlag==='down' && (screentype!=='rect' || lang!=='cn' || numFlag || rectKeyboardtype!=='T9')}}">
+          <div class="list67" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}}">
+            <list static style="width:100%;height:100%;">
+              <list-item type="waitingRows67" class="item67" for="{{itemArray in resultList2}}">
+                <div class="item column center" for="{{item in itemArray}}">
+                  <input class="calbtn02" style="color:{{rectThemeText}}" type="button" value="{{item}}" @click="onRsSelect(item)" />
+                </div>
+              </list-item>
+            </list>
+          </div>
+          <text class="rect-theme-expand-toggle" style="background-color:{{rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="onBtnClick('down')">⌃</text>
+        </div>
+        <!-- 方屏键盘切换面板：仅中部的 scroll 响应横向滚动，左右各留 12px 边缘让出系统右滑返回手势。 -->
+        <div class="rect-overlay" style="background-color:{{rectThemeBackground}}" if="{{rectPanel==='switch'}}">
+          <scroll id="rectModeScroll" class="rect-mode-scroll" scroll-x="{{true}}" style="width:{{screenWidth - 24}}px;">
+            <div class="rect-mode-menu">
+              <text class="rect-mode-button" style="background-color:{{lang==='cn' && rectKeyboardtype!=='T9' && !numFlag ? rectThemeAccent : rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="selectRectKeyboard('cn')">中</text>
+              <text class="rect-mode-button" style="background-color:{{lang==='en' && rectKeyboardtype!=='T9' && !numFlag ? rectThemeAccent : rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="selectRectKeyboard('en')">英</text>
+              <text class="rect-mode-button" style="background-color:{{rectKeyboardtype==='T9' && !numFlag ? rectThemeAccent : rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="selectRectKeyboard('t9')">九</text>
+              <text class="rect-mode-button" style="background-color:{{numFlag ? rectThemeAccent : rectThemeSurface}};border-color:{{rectThemeBorder}};color:{{rectThemeText}}" @click="selectRectKeyboard('num')">数</text>
+            </div>
+          </scroll>
+        </div>
+      </div>
+      <!-- 胶囊屏66 -->
+      <div if="{{screentype==='pill-shaped'}}" style="width: 100%;height: 305px">
+        <div static style="position:absolute;left:0px;top:34px;width:100%;height:276px;">
+          <progress percent="{{30+percent66}}" type="arc" style="start-angle:204deg;total-angle:-48deg;width:188px;height:188px;top:82px;left:2px;position:absolute;color:#ffffff;stroke-width:6px;layer-color:#262626;margin-left: {{(screenWidth - 192)/2}}px;"></progress>
+          <scroll id="keyboard66" scroll-x="{{true}}" onscroll="handelScroll" style="padding-left: {{(screenWidth - 192)/2}}px;padding-right: {{(screenWidth - 192)/2}}px;">
+            <div if="{{!numFlag}}" style="left: 3px; flex-direction: column;">
+              <div static style="margin-left: 0px;margin-top: 0px;height: 60px;">
+                <text class="calbtn66" for="{{item in keys['full'][0]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 32px;margin-top: -5px;height: 60px;">
+                <text class="calbtn66" for="{{item in keys['full'][1]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 64px;margin-top: -5px;height: 60px;">
+                <text class="calbtn66" for="{{item in keys['full'][2]}}" @click="onSelect(item)">{{item}}</text>
+                <img static src="./assets/arc/space.png" style="width: 60px;height: 60px;" @click="onBtnClick('space')" />
+              </div>
+            </div>
+            <div else style="left: 3px; flex-direction: column;">
+              <div static style="margin-left: 0px;margin-top: 0px;height: 60px;">
+                <text class="calbtn66" for="{{item in keys['sign'][0]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 32px;margin-top: -5px;height: 60px;">
+                <text class="calbtn66" for="{{item in keys['sign'][1]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+              <div static style="margin-left: 64px;margin-top: -5px;height: 60px;">
+                <text class="calbtn66" for="{{item in keys['sign'][2]}}" @click="onSelect(item)">{{item}}</text>
+              </div>
+            </div>
+          </scroll>
+        </div>
+        <div static style="position: absolute;left: {{(screenWidth - 192)/2}}px;top: 0px;width: 192px;height: 110px;"> 
+          <img static style="position: absolute;left: 3px;top: 47px;width: 186px;height: 60px;" src="./assets/arc/search.png" />
+          <scroll id="cvalWaiting" scroll-x="{{true}}" style="position: absolute;left: 15px;top: 56px;width: 144px;height: 42px;">
+            <div style="position: absolute;left: 0px;top: 0px;height: 42px;padding-right:20px">
+              <text class="calbtn02" style="padding-right:10px" @click="pushCval">{{cval}}</text>
+              <text for="{{cvalList}}" show="{{resultList.length > $idx}}" class="calbtn02" style="padding-right:10px" @click="onRsSelect(resultList[$idx], $idx)">{{resultList[$idx]}}</text>
+            </div>
+          </scroll>
+          <img show="{{resultList.length > 0}}" style="position: absolute;left: 120px;top: 57px;width: 60px;height: 40px;" src="./assets/arc/down2.png" @click="onBtnClick('down')" />
+          <!-- 带变量的相对路径在 aiot-tookit 2.0.4 中修复 -->
+          <img src="./assets/arc/{{lang}}.png" style="position: absolute;top:0px;left:9px;width: 48px;height: 42px;" @click="onBtnClick('lang')" show="{{downFlag==='' && !numFlag}}" />
+          <img src="./assets/arc/back2.png" style="position: absolute;top:0px;left:9px;width: 48px;height: 42px;" @click="onBtnClick('switchCn')" show="{{numFlag && lang==='cn'}}" />
+          <img src="./assets/arc/123.png" style="position: absolute;left: 70px;top: 0px;width: 52px;height: 42px;" @click="onBtnClick('switchNum')" show="{{downFlag==='' && !numFlag && lang==='cn'}}" />
+          <img src="./assets/arc/bigA.png" style="position: absolute;top:0px;left:72px;width:48px;height:42px;" @click="onBtnClick('switchLow')" show="{{downFlag==='' && upperFlag && lang==='en'}}" />
+          <img src="./assets/arc/a.png" style="position: absolute;top:0px;left:72px;width:48px;height:42px;" @click="onBtnClick('switchUpper')" show="{{downFlag==='' && !upperFlag && lang==='en'}}" />
+          <img src="./assets/arc/del.png" style="position: absolute;left: 135px;top: 0px;width: 48px;height: 42px;" @click="onBtnClick('D')" />
+        </div>
+        <!-- 这里使用show会导致每次输入都会加载全部候选列表，很卡 -->
+        <div style="position: absolute;top: 47px;width: 100%;height: 263px;background-color: black;" if="{{downFlag==='down'}}">
+          <div style="position: absolute;left: {{(screenWidth - 192)/2}}px;width: 192px;height: 263px;"> 
+            <list static class="list66">
+              <list-item type="waitingRows66" class="item66" for="{{itemArray in resultList2}}">
+                <div class="item column center" for="{{item in itemArray}}">
+                  <input class="calbtn0" type="button" value="{{item}}" @click="onRsSelect(item)" />
+                </div>
+              </list-item>
+            </list>
+            <img static style="position: absolute;top:196px;left:56px;width: 80px;height: 60px;" src="./assets/arc/up2.png" @click="onBtnClick('down')" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import vibrator from "@system.vibrator";
+import device from '@system.device'
+import { SimpleInputMethod } from "./assets/dicUtil.js";
+function doSearchDic(word, traditional, cb) {
+  let candidates = SimpleInputMethod.getHanziCandidates(word, traditional);
+  if (candidates && candidates[0]) {
+    cb(candidates[0]);
+  } else {
+    cb([]);
+  }
+}
+function doSearchT9Dic(digits, traditional, cb) {
+  let candidates = SimpleInputMethod.getT9Candidates(digits, traditional);
+  if (candidates && candidates[0]) {
+    cb(candidates[0]);
+  } else {
+    cb([]);
+  }
+}
+function getT9PinyinGroups(digits, traditional) {
+  return SimpleInputMethod.getT9PinyinGroups(digits, traditional) || [];
+}
+// 方屏中文 T9 中每个字母组只对应一个数字。按 ABC、DEF、GHI 即得到 234。
+const RECT_SHIFT_DOUBLE_TAP_WINDOW = 500;
+const T9_GROUP_TO_DIGIT = {
+  abc: "2",
+  def: "3",
+  ghi: "4",
+  jkl: "5",
+  mno: "6",
+  pqrs: "7",
+  tuv: "8",
+  wxyz: "9",
+};
+function deleteLast(t) {
+  if (t) {
+    return t.substr(0, t.length - 1);
+  }
+  return "";
+}
+// 快应用通过 props 提供默认偏好；组件只规范化和应用，不保存、不回写。
+function normalizeKeyboardType(value) {
+  return value === "T9" ? "T9" : "QWERTY";
+}
+function normalizeTraditional(value) {
+  return value === true || value === "true";
+}
+function normalizeVibrateMode(value) {
+  return value === "short" || value === "long" ? value : "";
+}
+function normalizeCandidateCount(value, fallback) {
+  const count = parseInt(value);
+  return count > 0 ? count : fallback;
+}
+function normalizeFeatureEnabled(value) {
+  return value === true || value === "true";
+}
+function normalizeKeyboardTheme(value) {
+  if (value === "white" || value === "blue-gray") {
+    return value;
+  }
+  return "dark";
+}
+function getRectTheme(value) {
+  const theme = normalizeKeyboardTheme(value);
+  if (theme === "white") {
+    return {
+      name: theme,
+      background: "#ffffff",
+      surface: "#f1f1f1",
+      mutedSurface: "#f7f7f7",
+      border: "#c9c9c9",
+      text: "#1a1a1a",
+      progress: "#d7d7d7",
+      accent: "rgb(13,132,255)",
+    };
+  }
+  if (theme === "blue-gray") {
+    return {
+      name: theme,
+      background: "#0d1b2a",
+      surface: "#1c3248",
+      mutedSurface: "#162a3d",
+      border: "#415d75",
+      text: "#f5f8fc",
+      progress: "#243b53",
+      accent: "#2a9dff",
+    };
+  }
+  return {
+    name: theme,
+    background: "#000000",
+    surface: "rgb(38,38,38)",
+    mutedSurface: "#1f1f1f",
+    border: "#333333",
+    text: "rgb(255,255,255)",
+    progress: "#262626",
+    accent: "rgb(13,132,255)",
+  };
+}
+export default {
+  props: {
+    hide: {
+      default: true,
+    },
+    keyboardtype: {
+      default: "QWERTY",
+    },
+    maxlength: {
+      default: 5,
+    },
+    vibratemode: {
+      default: "",
+    },
+    screentype: {
+      default: "circle",
+    },
+    traditional: {
+      default: false,
+    },
+    // 方屏主题由快应用设置页传入；支持 dark、white、blue-gray。
+    keyboardtheme: {
+      default: "dark",
+    },
+    // 英文双击 Shift 锁定大写由快应用设置页控制，默认关闭。
+    doubletapshiftlock: {
+      default: false,
+    },
+  },
+  data: {
+    cval: "",
+    // 仅方屏中文 T9 使用；保存按键数字序列，例如 ABC→DEF→GHI 为“234”。
+    t9Digits: "",
+    // 方屏九键展开时使用：左侧为拼音组，右侧仅显示当前拼音组的汉字。
+    t9PinyinGroups: [],
+    t9SelectedPinyinIndex: 0,
+    t9SelectedCandidates: [],
+    t9SelectedRows: [],
+    resultList: [],
+    // 与 resultList 一一对应；音节单字候选保存后续拼音/数字串，支持逐音节确认。
+    resultMeta: [],
+    resultList2: [],
+    waitingList: [],
+    waitingIndex: -1,
+    lastWaitingStr: "",
+    downFlag: "",
+    lang: "cn",
+    numFlag: false,
+    upperFlag: false,
+    cvalList: [0, 1, 2, 3, 4],
+    percent67: 52,
+    percent66: 0,
+    // 方屏专用状态；不修改外部 keyboardtype/vibratemode 属性，避免破坏组件的单向数据流。
+    rectPanel: "",
+    // 仅用于方屏：区分切换页数字模式与英文 123 数字模式的返回键显示。
+    rectNumFromSwitch: false,
+    rectKeyboardtype: "QWERTY",
+    rectVibrateMode: "",
+    rectCandidateCount: 5,
+    // 方屏繁体输入默认关闭；宿主可通过 traditional 属性恢复已保存偏好。
+    rectTraditionalInput: false,
+    // 方屏主题只读取快应用属性，不在组件内保存或回写。
+    rectKeyboardTheme: "dark",
+    rectThemeBackground: "#000000",
+    rectThemeSurface: "rgb(38,38,38)",
+    rectThemeMutedSurface: "#1f1f1f",
+    rectThemeBorder: "#333333",
+    rectThemeText: "rgb(255,255,255)",
+    rectThemeProgress: "#262626",
+    rectThemeAccent: "rgb(13,132,255)",
+    // 方屏英文输入辅助只读取快应用属性，不保存或回写设置。
+    rectDoubleTapShiftLock: false,
+    rectShiftLocked: false,
+    rectLastShiftTapAt: 0,
+    // 针对screenShape为rect的设备，会自动获取screenWidth并绑定到根div
+    // 这样便能同时适配n67和o65甚至是后续设备，但实际效果可能受designWidth影响
+    screenWidth: 336,
+    keys: {
+      full: [
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+        ["Z", "X", "C", "V", "B", "N", "M"],
+      ],
+      sign: [
+        ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+        ["~", "!", "@", "#", "%", "“", "”", "*", "?", "/"],
+        ["(", ")", "-", "_", ":", ";", "，", "。", "."],
+      ],
+      sign62: [
+        ["2", "3", "4", "5", "6", "7", "8", "9"],
+        ["!", "@", "#", "%", "“", "”", "*"],
+        [")", "-", "_", ":", ";"],
+      ],
+      full62: [
+        ["W", "E", "R", "T", "Y", "U", "I", "O"],
+        ["S", "D", "F", "G", "H", "J", "K"],
+        ["X", "C", "V", "B", "N"],
+      ],
+      t9: [
+        ["abc", "def"],
+        ["ghi", "jkl", "mno"],
+        ["pqrs", "tuv", "wxyz"],
+      ],
+    },
+  },
+  onInit() {
+    const initialCandidateCount = normalizeCandidateCount(this.maxlength, 5);
+    const tempCvalList = [];
+    for (let i = 0; i < initialCandidateCount; i++) {
+      tempCvalList.push(i);
+    }
+    this.cvalList = tempCvalList;
+    if (this.screentype === "rect" || this.screentype === "pill-shaped") {
+      this.adjustScreenWidth();
+    }
+    // 初始化方屏内部状态，以外部传入属性作为首次默认值。
+    this.rectKeyboardtype = normalizeKeyboardType(this.keyboardtype);
+    this.rectVibrateMode = normalizeVibrateMode(this.vibratemode);
+    this.rectCandidateCount = initialCandidateCount;
+    this.rectTraditionalInput = normalizeTraditional(this.traditional);
+    this.rectDoubleTapShiftLock = normalizeFeatureEnabled(this.doubletapshiftlock);
+    this.applyRectTheme(this.keyboardtheme);
+    this.$watch("hide", "watchHidePropsChange");
+    this.$watch("maxlength", "watchMaxLengthPropsChange");
+    this.$watch("keyboardtype", "watchKeyboardtypePropsChange");
+    this.$watch("vibratemode", "watchVibratemodePropsChange");
+    this.$watch("traditional", "watchTraditionalPropsChange");
+    this.$watch("keyboardtheme", "watchKeyboardthemePropsChange");
+    this.$watch("doubletapshiftlock", "watchDoubletapshiftlockPropsChange");
+  },
+  addAllTxt(txt) {
+    this.$emit("complete", { content: txt });
+  },
+  openRectPanel(panel) {
+    if (this.screentype !== "rect") {
+      return;
+    }
+    this.onVibrate();
+    this.rectPanel = panel;
+  },
+  closeRectPanel() {
+    this.onVibrate();
+    this.rectPanel = "";
+  },
+  selectRectKeyboard(mode) {
+    this.onVibrate();
+    this.rectPanel = "";
+    this.numFlag = mode === "num";
+    this.rectNumFromSwitch = mode === "num";
+    this.cval = "";
+    this.clearT9Input();
+    this.clearWaiting();
+    if (mode === "cn") {
+      this.lang = "cn";
+      this.rectKeyboardtype = "QWERTY";
+    } else if (mode === "en") {
+      this.lang = "en";
+      this.rectKeyboardtype = "QWERTY";
+    } else if (mode === "t9") {
+      this.lang = "cn";
+      this.rectKeyboardtype = "T9";
+    }
+    this.resetReslutList();
+  },
+  toggleRectTraditionalInput() {
+    this.rectTraditionalInput = !this.rectTraditionalInput;
+    this.resetReslutList();
+    this.onVibrate();
+  },
+  onRsSelect(txt, candidateIndex) {
+    this.onVibrate();
+    let meta = null;
+    if (candidateIndex !== undefined && this.resultMeta[candidateIndex]) {
+      meta = this.resultMeta[candidateIndex];
+    } else {
+      for (let i = 0; i < this.resultMeta.length; i++) {
+        if (this.resultMeta[i].text === txt) {
+          meta = this.resultMeta[i];
+          break;
+        }
+      }
+    }
+    this.commitCandidate(txt, meta);
+  },
+  commitCandidate(txt, meta) {
+    this.cval = meta && meta.remainderPinyin ? meta.remainderPinyin : "";
+    if (this.isRectChineseT9()) {
+      this.t9Digits = meta && meta.remainderDigits ? meta.remainderDigits : "";
+    } else {
+      this.clearT9Input();
+    }
+    this.addAllTxt(txt);
+    this.clearWaiting();
+    this.resetReslutList();
+    this.downFlag = "";
+  },
+  selectT9Pinyin(index) {
+    this.onVibrate();
+    if (!this.t9PinyinGroups[index]) {
+      return;
+    }
+    this.t9SelectedPinyinIndex = index;
+    this.setT9SelectedCandidates(this.t9PinyinGroups[index].candidates);
+  },
+  onT9PinyinHanziSelect(candidate) {
+    if (!candidate) {
+      return;
+    }
+    this.onVibrate();
+    this.commitCandidate(candidate.text, candidate);
+  },
+  setT9SelectedCandidates(candidates) {
+    this.t9SelectedCandidates = candidates || [];
+    this.t9SelectedRows = [];
+    let row = [];
+    for (let i = 0; i < this.t9SelectedCandidates.length; i++) {
+      row.push(this.t9SelectedCandidates[i]);
+      if (row.length === 3) {
+        this.t9SelectedRows.push(row);
+        row = [];
+      }
+    }
+    if (row.length) {
+      this.t9SelectedRows.push(row);
+    }
+  },
+  clearT9PinyinGroups() {
+    this.t9PinyinGroups = [];
+    this.t9SelectedPinyinIndex = 0;
+    this.t9SelectedCandidates = [];
+    this.t9SelectedRows = [];
+  },
+  refreshT9PinyinGroups() {
+    if (!this.isRectChineseT9() || !this.t9Digits) {
+      this.clearT9PinyinGroups();
+      return;
+    }
+    const selected = this.t9PinyinGroups[this.t9SelectedPinyinIndex];
+    const previousPinyin = selected ? selected.pinyin : "";
+    this.t9PinyinGroups = getT9PinyinGroups(this.t9Digits, this.rectTraditionalInput);
+    let index = 0;
+    for (let i = 0; i < this.t9PinyinGroups.length; i++) {
+      if (this.t9PinyinGroups[i].pinyin === previousPinyin) {
+        index = i;
+        break;
+      }
+    }
+    this.t9SelectedPinyinIndex = index;
+    if (this.t9PinyinGroups[index]) {
+      this.setT9SelectedCandidates(this.t9PinyinGroups[index].candidates);
+    } else {
+      this.setT9SelectedCandidates([]);
+    }
+  },
+  emitCursorAction(action) {
+    // 光标操作先取消尚未确认的拼音组合，避免候选字插入到移动前的位置。
+    this.cval = "";
+    this.clearT9Input();
+    this.clearWaiting();
+    this.resetReslutList();
+    this.$emit("cursor", { action: action });
+  },
+  handleRectShiftToggle(nextUpper) {
+    if (this.screentype !== "rect" || !this.rectDoubleTapShiftLock) {
+      this.rectShiftLocked = false;
+      this.rectLastShiftTapAt = 0;
+      this.upperFlag = nextUpper;
+      return;
+    }
+    const now = Date.now();
+    const isDoubleTap = this.rectLastShiftTapAt > 0 && now - this.rectLastShiftTapAt <= RECT_SHIFT_DOUBLE_TAP_WINDOW;
+    this.rectLastShiftTapAt = now;
+    if (isDoubleTap) {
+      this.rectShiftLocked = true;
+      this.rectLastShiftTapAt = 0;
+      this.upperFlag = true;
+      return;
+    }
+    this.rectShiftLocked = false;
+    this.upperFlag = nextUpper;
+  },
+  commitEnglishCharacter(text) {
+    if (this.upperFlag) {
+      this.addAllTxt(text.toUpperCase());
+    } else {
+      this.addAllTxt(text.toLowerCase());
+    }
+  },
+  onBtnClick(sign) {
+    this.onVibrate();
+    switch (sign) {
+      case "AC":
+        this.cval = "";
+        this.clearT9Input();
+        this.clearWaiting();
+        this.resetReslutList();
+        break;
+      case "lang":
+        if (this.lang === "cn") {
+          this.lang = "en";
+        } else {
+          this.lang = "cn";
+        }
+        this.cval = "";
+        this.clearT9Input();
+        this.clearWaiting();
+        this.resetReslutList();
+        break;
+      case "D":
+        if (this.isRectChineseT9() && this.t9Digits) {
+          this.t9Digits = deleteLast(this.t9Digits);
+          this.resetReslutList();
+        } else if (this.waitingIndex >= 0) {
+          this.clearWaiting();
+          this.resetReslutList();
+        } else if (this.cval.length > 0) {
+          this.cval = deleteLast(this.cval);
+          this.resetReslutList();
+        } else {
+          this.$emit("delete", {});
+        }
+        break;
+      case "space":
+        if (this.isRectChineseT9()) {
+          this.clearT9Input();
+          this.resetReslutList();
+        }
+        this.addAllTxt(" ");
+        break;
+      case "down":
+        this.downFlag = this.downFlag === "down" ? "" : "down";
+        break;
+      case "cursorEnter":
+        this.emitCursorAction("enter");
+        break;
+      case "cursorUp":
+        this.emitCursorAction("up");
+        break;
+      case "cursorDown":
+        this.emitCursorAction("down");
+        break;
+      case "cursorLeft":
+        this.emitCursorAction("left");
+        break;
+      case "cursorRight":
+        this.emitCursorAction("right");
+        break;
+      case "select":
+        if (this.lastWaitingStr != sign && this.lastWaitingStr) {
+          if (this.lang === "cn") {
+            this.cval += this.waitingList[this.waitingIndex];
+          } else {
+            this.commitEnglishCharacter(this.waitingList[this.waitingIndex]);
+          }
+          this.clearWaiting();
+          this.resetReslutList();
+        }
+        break;
+      case "switchNum":
+        // 英文键盘的 123 入口继续使用原返回键。
+        this.rectNumFromSwitch = false;
+        this.numFlag = true;
+        this.cval = "";
+        this.clearT9Input();
+        this.clearWaiting();
+        this.resetReslutList();
+        break;
+      case "switchCn":
+        this.numFlag = false;
+        this.rectNumFromSwitch = false;
+        break;
+      case "switchUpper":
+        this.handleRectShiftToggle(true);
+        break;
+      case "switchLow":
+        this.handleRectShiftToggle(false);
+        break;
+      default:
+        if (this.isRectChineseT9() && T9_GROUP_TO_DIGIT[sign]) {
+          this.t9Digits += T9_GROUP_TO_DIGIT[sign];
+          this.clearWaiting();
+          this.resetReslutList();
+        } else if (sign.length === 1) {
+          this.addAllTxt(sign);
+        } else {
+          if (this.waitingIndex >= 0) {
+            if (this.lastWaitingStr === sign) {
+              this.waitingIndex++;
+              if (this.waitingIndex >= this.lastWaitingStr.length) {
+                this.waitingIndex = 0;
+              }
+            } else {
+              if (this.lang === "cn") {
+                this.cval += this.waitingList[this.waitingIndex];
+              } else {
+                this.commitEnglishCharacter(this.waitingList[this.waitingIndex]);
+              }
+              this.lastWaitingStr = sign;
+              this.waitingIndex = 0;
+              this.waitingList = sign.split("");
+            }
+          } else {
+            this.lastWaitingStr = sign;
+            this.waitingIndex = 0;
+            this.waitingList = sign.split("");
+          }
+          this.resetReslutList();
+        }
+        break;
+    }
+  },
+  clearWaiting() {
+    this.waitingList = [];
+    this.waitingIndex = -1;
+    this.lastWaitingStr = "";
+  },
+  isRectChineseT9() {
+    return this.screentype === "rect" && this.lang === "cn" && !this.numFlag && this.rectKeyboardtype === "T9";
+  },
+  clearT9Input() {
+    this.t9Digits = "";
+    this.clearT9PinyinGroups();
+  },
+  resetReslutList() {
+    if (this.screentype != "circle") {
+      this.$element("cvalWaiting").scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+    }
+    if (this.isRectChineseT9()) {
+      if (!this.t9Digits) {
+        this.resultList = [];
+        this.resultMeta = [];
+        this.clearT9PinyinGroups();
+        this.setResultListAll();
+        return;
+      }
+      this.getResultByT9(this.t9Digits);
+      return;
+    }
+    let watingStr = "";
+    if (this.lastWaitingStr && this.lastWaitingStr[this.waitingIndex]) {
+      watingStr = this.lastWaitingStr[this.waitingIndex];
+    }
+    if (!(this.cval + watingStr) || this.lang != "cn") {
+      this.resultList = [];
+      this.resultMeta = [];
+      this.setResultListAll();
+      return;
+    }
+    this.getResultByWord(this.cval + watingStr);
+  },
+  setResultCandidates(candidates) {
+    this.resultMeta = candidates || [];
+    this.resultList = [];
+    for (let i = 0; i < this.resultMeta.length; i++) {
+      this.resultList.push(this.resultMeta[i].text);
+    }
+    this.setResultListAll();
+  },
+  setResultListAll() {
+    const candidateCount = normalizeCandidateCount(this.maxlength, 5);
+    this.resultList2 = [];
+    let array = [];
+    for (let i = 0; i < this.resultList.length; i++) {
+      array.push(this.resultList[i]);
+      if (array.length === candidateCount) {
+        this.resultList2.push(array);
+        array = [];
+      }
+    }
+    if (array.length > 0 && array.length < candidateCount) {
+      this.resultList2.push(array);
+    }
+  },
+  getResultByWord(val) {
+    const that = this;
+    const traditional = this.screentype === "rect" && this.rectTraditionalInput;
+    doSearchDic(val, traditional, function (candidates) {
+      that.setResultCandidates(candidates);
+    });
+  },
+  getResultByT9(digits) {
+    const that = this;
+    const traditional = this.rectTraditionalInput;
+    doSearchT9Dic(digits, traditional, function (candidates) {
+      that.setResultCandidates(candidates);
+      that.refreshT9PinyinGroups();
+    });
+  },
+  onSelect(num) {
+    this.$emit("keyDown", { content: num });
+    const activeKeyboardtype = this.screentype === "rect" ? this.rectKeyboardtype : this.keyboardtype;
+    if (activeKeyboardtype === "T9" && this.screentype !== "pill-shaped") {
+      this.onBtnClick(num);
+      return;
+    }
+    this.onVibrate();
+    if (this.lang === "cn" && !this.numFlag) {
+      this.cval += num.toLowerCase();
+    } else if (this.lang === "en" && !this.numFlag) {
+      this.commitEnglishCharacter(num);
+    } else {
+      this.addAllTxt(num);
+    }
+    this.resetReslutList();
+  },
+  onSelectWaiting(num) {
+    this.onVibrate();
+    if (this.lang === "cn") {
+      this.cval += this.waitingList[num].toString();
+    } else {
+      this.commitEnglishCharacter(this.waitingList[num]);
+    }
+    this.clearWaiting();
+    this.resetReslutList();
+  },
+  watchHidePropsChange(newV, oldV) {
+    this.$emit("visibilityChange", { visible: newV });
+  },
+  watchMaxLengthPropsChange(newV, oldV) {
+    const candidateCount = normalizeCandidateCount(newV, this.rectCandidateCount || 5);
+    const tempCvalList = [];
+    for (let i = 0; i < candidateCount; i++) {
+      tempCvalList.push(i);
+    }
+    this.cvalList = tempCvalList;
+    if (this.screentype === "rect") {
+      this.rectCandidateCount = candidateCount;
+    }
+  },
+  watchKeyboardtypePropsChange(newV, oldV) {
+    if (this.screentype === "rect") {
+      this.rectKeyboardtype = normalizeKeyboardType(newV);
+    }
+  },
+  watchVibratemodePropsChange(newV, oldV) {
+    if (this.screentype === "rect") {
+      this.rectVibrateMode = normalizeVibrateMode(newV);
+    }
+  },
+  watchTraditionalPropsChange(newV, oldV) {
+    if (this.screentype === "rect") {
+      this.rectTraditionalInput = normalizeTraditional(newV);
+      this.resetReslutList();
+    }
+  },
+  applyRectTheme(theme) {
+    const nextTheme = getRectTheme(theme);
+    this.rectKeyboardTheme = nextTheme.name;
+    this.rectThemeBackground = nextTheme.background;
+    this.rectThemeSurface = nextTheme.surface;
+    this.rectThemeMutedSurface = nextTheme.mutedSurface;
+    this.rectThemeBorder = nextTheme.border;
+    this.rectThemeText = nextTheme.text;
+    this.rectThemeProgress = nextTheme.progress;
+    this.rectThemeAccent = nextTheme.accent;
+  },
+  watchKeyboardthemePropsChange(newV, oldV) {
+    this.applyRectTheme(newV);
+  },
+  watchDoubletapshiftlockPropsChange(newV, oldV) {
+    this.rectDoubleTapShiftLock = normalizeFeatureEnabled(newV);
+    if (!this.rectDoubleTapShiftLock) {
+      this.rectShiftLocked = false;
+      this.rectLastShiftTapAt = 0;
+    }
+  },
+  onVibrate() {
+    const currentMode = this.screentype === "rect" ? this.rectVibrateMode : this.vibratemode;
+    const mode = normalizeVibrateMode(currentMode);
+    if (mode != "") {
+      vibrator.vibrate({ mode: mode });
+    }
+  },
+  handelScroll(event) {
+    let percentTemp67 = (event.scrollX / 636) * 100 + 52.8;
+    this.percent67 = parseInt(percentTemp67 <= 100 ? percentTemp67 : 100);
+    let percentTemp66 = (event.scrollX / 633) * 100;
+    this.percent66 = parseInt(percentTemp66 <= 100 ? percentTemp66 : 100);
+  },
+  pushCval() {
+    this.onVibrate();
+    // 数字组合只是 T9 查询条件，必须由候选项确认，不能直接写入正文。
+    if (this.isRectChineseT9()) {
+      return;
+    }
+    let temp = this.cval;
+    this.cval = "";
+    this.clearWaiting();
+    this.resetReslutList();
+    this.addAllTxt(temp);
+  },
+  adjustScreenWidth(){
+    device.getInfo({
+      success: (data) => {
+        this.screenWidth = data.screenWidth;
+      }
+    })
+  }
+};
+</script>
+
+<style>
+.page {
+		width:100%;
+		position:absolute;
+		left:0;
+		bottom:0
+}
+.item {
+	height:52px;
+	flex:1
+}
+.calbtn0 {
+	color:#fff;
+	font-size:28px;
+	background-color:rgba(38,38,38,0);
+	border-radius:0;
+	height:52px;
+	width:52px;
+	text-align:center
+}
+.calbtn02 {
+	color:rgb(255,255,255);
+	background-color:rgba(38,38,38,0);
+	border-radius:0px;
+	font-size:32px;
+	text-align:center;
+	height:42px;
+}
+.calbtnfull {
+	color:#fff;
+	font-size:24px;
+	font-weight:bold;
+	background-color:#262626;
+	border-radius:12px;
+	margin-right:4px;
+	height:52px;
+	width:40px;
+	text-align:center;
+	border:3px solid rgba(255,255,255,0.06)
+}
+.calbtnt9 {
+	color:#fff;
+	font-size:25px;
+	font-weight:bold;
+	background-color:#262626;
+	border-radius:999px;
+	margin-right:4px;
+	width:94px;
+	height:60px;
+	text-align:center;
+	border:3px solid rgba(255,255,255,0.06)
+}
+.caltext {
+	text-align:left;
+	line-height:38px;
+	lines:1;
+	text-overflow:ellipsis;
+	color:#0d84ff;
+	height:45px;
+	font-size:28px;
+	text-align:left;
+	font-weight:bold;
+	padding-left:8px
+}
+.list3 {
+	position:absolute;
+	top:38px;
+	left:78px;
+	width:324px;
+	height:160px;
+	flex-direction:column;
+	background-color:#262626;
+	border-radius:12px
+}
+.item3 {
+	width:324px;
+	height:52px
+}
+.rect-switch-trigger {
+  color:rgb(255,255,255);
+  font-size:22px;
+  font-weight:bold;
+  background-color:rgb(38,38,38);
+  width:60px;
+  height:56px;
+  border-radius:28px;
+  text-align:center;
+  border:3px solid rgba(255,255,255,0.12);
+}
+  .rect-traditional-trigger {
+    color:rgb(255,255,255);
+    font-size:22px;
+    font-weight:bold;
+    width:54px;
+    height:56px;
+    margin-left:6px;
+    border-radius:28px;
+    text-align:center;
+    border:3px solid rgba(255,255,255,0.12);
+  }
+  .rect-overlay {
+
+  position:absolute;
+  left:0px;
+  top:0px;
+  width:100%;
+  height:286px;
+  background-color:black;
+  justify-content:center;
+  align-items:center;
+}
+.rect-mode-scroll {
+  height:100%;
+  /* 仅该局部滚动容器处理横向滑动；外层不绑定滑动事件。 */
+}
+.rect-mode-menu {
+  /* 四个大圆形菜单项保留完整内容宽度，由内部 scroll 横向查看。 */
+  min-width:432px;
+  height:100%;
+  padding-left:18px;
+  padding-right:18px;
+  flex-direction:row;
+  justify-content:flex-start;
+  align-items:center;
+}
+.rect-mode-button {
+  color:#fff;
+  font-size:34px;
+  font-weight:bold;
+  /* 84px 接近方屏键盘按键的可点按面积，并在 252px 面板内保留上下呼吸空间。 */
+  width:84px;
+  height:84px;
+  margin:0 6px;
+  border-radius:42px;
+  text-align:center;
+  border:3px solid rgba(255,255,255,0.14);
+}
+.rect-five-key-bar {
+  position:absolute;
+  top:60px;
+  left:6px;
+  height:36px;
+  flex-direction:row;
+  align-items:center;
+}
+.rect-five-key-enter {
+  color:rgb(255,255,255);
+  font-size:20px;
+  font-weight:bold;
+  width:64px;
+  height:36px;
+  margin-right:4px;
+  background-color:rgb(38,38,38);
+  border-radius:18px;
+  text-align:center;
+  border:3px solid rgba(255,255,255,0.06);
+}
+.rect-five-key-directions {
+  flex:1;
+  height:36px;
+  flex-direction:row;
+  align-items:center;
+}
+.rect-five-key-direction {
+  color:rgb(255,255,255);
+  font-size:21px;
+  font-weight:bold;
+  flex:1;
+  height:36px;
+  margin-left:3px;
+  background-color:rgb(38,38,38);
+  border-radius:18px;
+  text-align:center;
+  border:3px solid rgba(255,255,255,0.06);
+}
+.rect-theme-space-key {
+	color:rgb(255,255,255);
+	font-size:18px;
+	font-weight:bold;
+	width:60px;
+	height:60px;
+	border-radius:30px;
+	text-align:center;
+	line-height:60px;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.rect-theme-control-key {
+	color:rgb(255,255,255);
+	font-size:26px;
+	font-weight:bold;
+	width:94px;
+	height:56px;
+	margin-left:6px;
+	border-radius:28px;
+	text-align:center;
+	line-height:56px;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.rect-theme-back-key {
+	color:rgb(255,255,255);
+	font-size:22px;
+	font-weight:bold;
+	width:159px;
+	height:56px;
+	margin-left:6px;
+	border-radius:28px;
+	text-align:center;
+	line-height:56px;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.rect-theme-delete-key {
+	color:rgb(255,255,255);
+	font-size:29px;
+	font-weight:bold;
+	width:60px;
+	height:56px;
+	margin-left:6px;
+	border-radius:28px;
+	text-align:center;
+	line-height:56px;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.rect-theme-candidate-toggle {
+	color:rgb(255,255,255);
+	font-size:30px;
+	font-weight:bold;
+	width:60px;
+	height:40px;
+	border-radius:20px;
+	text-align:center;
+	line-height:40px;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.rect-theme-expand-toggle {
+	color:rgb(255,255,255);
+	font-size:30px;
+	font-weight:bold;
+	width:60px;
+	height:40px;
+	margin-top:5px;
+	border-radius:20px;
+	text-align:center;
+	line-height:40px;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.calbtn67 {
+	color:rgb(255,255,255);
+	font-size:32px;
+	font-weight:bold;
+	background-color:rgb(38,38,38);
+	margin-right:4px;
+	width:60px;
+	height:60px;
+	border-radius:30px;
+	text-align:center;
+	border:3px solid rgba(255,255,255,0.06);
+}
+	#keyboard67 {
+		position:absolute;
+		left:0px;
+		top:110px;
+	width:100%;
+	height:170px;
+}
+#keyboard66 {
+	position:absolute;
+	left:0px;
+	top:82px;
+	width:100%;
+	height:170px;
+}
+.list67 {
+	top:0px;
+	width:96.4%;
+	height:170px;
+	border-radius:30px;
+	background-color:#262626;
+	border:3px solid rgba(255,255,255,0.06);
+	padding:0px 10px;
+}
+.rect-t9-expand-overlay {
+  position:absolute;
+  left:0px;
+  top:0px;
+	  width:100%;
+	  height:286px;
+	  background-color:black;
+  justify-content:center;
+  flex-direction:column;
+  align-items:center;
+}
+.rect-t9-expand-content {
+  width:96.4%;
+  height:192px;
+  flex-direction:row;
+  background-color:transparent;
+}
+.rect-t9-pinyin-pane {
+  width:39%;
+  height:100%;
+  padding:4px;
+  background-color:#1f1f1f;
+  border-radius:24px;
+  border:3px solid rgba(255,255,255,0.12);
+}
+.rect-t9-pinyin-item {
+  color:#fff;
+  height:34px;
+  width:100%;
+  margin-bottom:2px;
+  font-size:22px;
+  font-weight:bold;
+  line-height:34px;
+  lines:1;
+  text-overflow:clip;
+  text-align:center;
+  border-radius:10px;
+}
+.rect-t9-hanzi-pane {
+  flex:1;
+  height:100%;
+  margin-left:8px;
+  padding-left:6px;
+  padding-right:6px;
+  background-color:#262626;
+  border-radius:24px;
+  border:3px solid rgba(255,255,255,0.12);
+}
+.item67 {
+	height:50px;
+}
+.calbtn66 {
+	color:rgb(255,255,255);
+	font-size:32px;
+	font-weight:bold;
+	background-color:rgb(38,38,38);
+	margin-right:3px;
+	width:60px;
+	height:60px;
+	border-radius:30px;
+	text-align:center;
+	border:3px solid rgba(255,255,255,0.06);
+}
+.list66 {
+	position:absolute;
+	left:3px;
+	top:0px;
+	width:186px;
+	height:186px;
+	border-radius:30px;
+	background-color:#262626;
+	border:3px solid rgba(255,255,255,0.06);
+	padding:10px
+}
+.item66 {
+	height:42px;
+}
+.waiting-keys {
+	width:36px;
+	height:40px;
+	text-align: center;
+}
+
+.keyboard-rows-rect-t9 { 
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  flex-shrink: 0;
+  height: 55px;
+  width: 100%;
+}
+
+.calbtnt9-rect { 
+  flex:1;
+  height: 55px;
+  margin: 0 3px;
+  width: unset;
+}
+
+/* 这里判断一个圆表屏幕是否在460~470px之间（目前只有466px），是的话就缩放 */
+@media (min-width: 230) and (max-width: 235) and (shape: circle) {
+  #full-keyboard {
+    transform: scale(0.96);
+    transform-origin: 0 321px;
+    overflow: visible;
+  }
+}
+</style>

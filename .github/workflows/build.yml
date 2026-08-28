@@ -1,0 +1,142 @@
+name: Build RPK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 构建目标设备
+        required: true
+        type: choice
+        default: rw5
+        options:
+          - rw5
+          - s3s4
+          - all
+
+concurrency:
+  group: build-${{ github.ref }}-${{ github.event.inputs.target || 'rw5' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: rw5
+            design_width: 432
+            device_name: RedmiWatch5_6
+          - target: s3s4
+            design_width: 466
+            device_name: S3S4
+
+    steps:
+      - name: 判断是否需要构建该目标
+        id: should_run
+        shell: bash
+        run: |
+          set -euo pipefail
+          EVENT="${{ github.event_name }}"
+          INPUT_TARGET="${{ github.event.inputs.target }}"
+          MATRIX_TARGET="${{ matrix.target }}"
+          SHOULD_RUN="false"
+          if [ "$EVENT" != "workflow_dispatch" ]; then
+            if [ "$MATRIX_TARGET" = "rw5" ]; then SHOULD_RUN="true"; fi
+          elif [ "$INPUT_TARGET" = "all" ] || [ "$INPUT_TARGET" = "$MATRIX_TARGET" ]; then
+            SHOULD_RUN="true"
+          fi
+          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
+
+      - name: 检出代码
+        if: steps.should_run.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 安装 Node.js
+        if: steps.should_run.outputs.should_run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: 安装 Yarn 1.x
+        if: steps.should_run.outputs.should_run == 'true'
+        run: |
+          npm install -g yarn@1.22.22
+          yarn --version
+
+      - name: 安装依赖
+        if: steps.should_run.outputs.should_run == 'true'
+        run: yarn install --network-timeout 600000
+
+      - name: 构建 RPK (${{ matrix.device_name }})
+        if: steps.should_run.outputs.should_run == 'true'
+        run: VARIANT_DESIGN_WIDTH=${{ matrix.design_width }} node scripts/build-rpk.js
+
+      - name: 命名构建产物
+        if: steps.should_run.outputs.should_run == 'true'
+        id: artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./src/manifest.json').versionName.replace(/ /g, '_')")
+          COMMIT_SHA="${GITHUB_SHA::7}"
+          RPK_NAME="box-vela-${{ matrix.device_name }}-v${VERSION}-${COMMIT_SHA}.rpk"
+          mv artifacts/Box-Vela.rpk "artifacts/$RPK_NAME"
+          echo "rpk_path<<EOF" >> "$GITHUB_OUTPUT"
+          echo "artifacts/$RPK_NAME" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          ls -lh artifacts/
+
+      - name: 上传构建产物
+        if: steps.should_run.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpk-${{ matrix.device_name }}
+          path: artifacts/*.rpk
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+      - name: 发布到 Release
+        if: steps.should_run.outputs.should_run == 'true' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ matrix.device_name }}-${{ github.sha }}
+          name: ${{ matrix.device_name }} 构建产物 (${{ github.sha }})
+          body: |
+            设备: ${{ matrix.device_name }}
+            提交: ${{ github.sha }}
+            产物: Box Vela (com.mmckb.boxvela)
+            触发: ${{ github.event_name }}
+          make_latest: "false"
+          prerelease: true
+          files: ${{ steps.artifact.outputs.rpk_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传构建日志（失败时）
+        if: failure() && steps.should_run.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.device_name }}
+          path: |
+            artifacts/
+            dist/
+          retention-days: 7
+          if-no-files-found: ignore

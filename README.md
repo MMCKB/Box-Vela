@@ -20,10 +20,10 @@
 
 ## 📥 安装
 
-对于普通用户，只需从 [Releases](https://github.com/MMCKB/Box-Vela/releases) 下载对应设备的 RPK 文件（`box-vela-RedmiWatch5_6-*.rpk` ，然后安装到设备上即可。
+对于普通用户，只需从 [Releases](https://github.com/MMCKB/Box-Vela/releases) 下载 RPK 文件（`box-vela-RedmiWatch5_6-*.rpk`），然后安装到设备上即可。
 
 - 包名：`com.mmckb.boxvela`
-- 已适配设备：Redmi Watch 5（方屏 466/480）
+- 已适配设备：Redmi Watch 5/6（方屏 432）
 
 ## 🛠️ 开发环境搭建
 
@@ -40,10 +40,7 @@ winget install Yarn.Yarn
 yarn
 
 # 本地构建
-yarn build
-
-# 指定屏幕宽度构建（如 S3S4 的 466）
-VARIANT_DESIGN_WIDTH=466 node scripts/build-rpk.js
+VARIANT_DESIGN_WIDTH=432 node scripts/build-rpk.js
 ```
 
 然后像普通快应用一样进行开发即可。

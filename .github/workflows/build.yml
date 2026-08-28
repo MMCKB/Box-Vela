@@ -1,4 +1,4 @@
-name: Build RPK
+name: 构建 RPK
 
 on:
   push:
@@ -14,18 +14,23 @@ on:
       - master
   workflow_dispatch:
     inputs:
-      target:
-        description: 构建目标设备
+      upload_release:
+        description: 是否上传到 Release
         required: true
-        type: choice
-        default: rw5
-        options:
-          - rw5
-          - s3s4
-          - all
+        type: boolean
+        default: true
+      version_name:
+        description: 版本号（留空则使用 manifest.json 中的当前版本）
+        required: false
+        type: string
+      prerelease:
+        description: 是否为预发布
+        required: true
+        type: boolean
+        default: true
 
 concurrency:
-  group: build-${{ github.ref }}-${{ github.event.inputs.target || 'rw5' }}
+  group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -34,107 +39,93 @@ jobs:
     permissions:
       contents: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: rw5
-            design_width: 432
-            device_name: RedmiWatch5_6
-          - target: s3s4
-            design_width: 466
-            device_name: S3S4
-
     steps:
-      - name: 判断是否需要构建该目标
-        id: should_run
-        shell: bash
-        run: |
-          set -euo pipefail
-          EVENT="${{ github.event_name }}"
-          INPUT_TARGET="${{ github.event.inputs.target }}"
-          MATRIX_TARGET="${{ matrix.target }}"
-          SHOULD_RUN="false"
-          if [ "$EVENT" != "workflow_dispatch" ]; then
-            if [ "$MATRIX_TARGET" = "rw5" ]; then SHOULD_RUN="true"; fi
-          elif [ "$INPUT_TARGET" = "all" ] || [ "$INPUT_TARGET" = "$MATRIX_TARGET" ]; then
-            SHOULD_RUN="true"
-          fi
-          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
-
       - name: 检出代码
-        if: steps.should_run.outputs.should_run == 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       - name: 安装 Node.js
-        if: steps.should_run.outputs.should_run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "24"
 
       - name: 安装 Yarn 1.x
-        if: steps.should_run.outputs.should_run == 'true'
         run: |
           npm install -g yarn@1.22.22
           yarn --version
 
       - name: 安装依赖
-        if: steps.should_run.outputs.should_run == 'true'
         run: yarn install --network-timeout 600000
 
-      - name: 构建 RPK (${{ matrix.device_name }})
-        if: steps.should_run.outputs.should_run == 'true'
-        run: VARIANT_DESIGN_WIDTH=${{ matrix.design_width }} node scripts/build-rpk.js
+      - name: 设置版本号
+        if: github.event_name == 'workflow_dispatch' && inputs.version_name != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "
+          const fs = require('fs');
+          const p = './src/manifest.json';
+          const m = JSON.parse(fs.readFileSync(p, 'utf8'));
+          m.versionName = process.argv[1];
+          fs.writeFileSync(p, JSON.stringify(m, null, 2) + '\n');
+          console.log('版本号已设置为 ' + process.argv[1]);
+          " "${{ inputs.version_name }}"
+
+      - name: 构建 RPK（RedmiWatch5_6）
+        run: VARIANT_DESIGN_WIDTH=432 node scripts/build-rpk.js
 
       - name: 命名构建产物
-        if: steps.should_run.outputs.should_run == 'true'
         id: artifact
         shell: bash
         run: |
           set -euo pipefail
           VERSION=$(node -p "require('./src/manifest.json').versionName.replace(/ /g, '_')")
           COMMIT_SHA="${GITHUB_SHA::7}"
-          RPK_NAME="box-vela-${{ matrix.device_name }}-v${VERSION}-${COMMIT_SHA}.rpk"
+          RPK_NAME="box-vela-RedmiWatch5_6-v${VERSION}-${COMMIT_SHA}.rpk"
           mv artifacts/Box-Vela.rpk "artifacts/$RPK_NAME"
-          echo "rpk_path<<EOF" >> "$GITHUB_OUTPUT"
-          echo "artifacts/$RPK_NAME" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          {
+            echo "rpk_path<<EOF"
+            echo "artifacts/$RPK_NAME"
+            echo "EOF"
+            echo "version=$VERSION"
+            echo "short_sha=$COMMIT_SHA"
+          } >> "$GITHUB_OUTPUT"
           ls -lh artifacts/
 
       - name: 上传构建产物
-        if: steps.should_run.outputs.should_run == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: rpk-${{ matrix.device_name }}
+          name: rpk-RedmiWatch5_6
           path: artifacts/*.rpk
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
 
       - name: 发布到 Release
-        if: steps.should_run.outputs.should_run == 'true' && github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.event.inputs.upload_release != 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ matrix.device_name }}-${{ github.sha }}
-          name: ${{ matrix.device_name }} 构建产物 (${{ github.sha }})
+          tag_name: vRedmiWatch5_6-v${{ steps.artifact.outputs.version }}
+          name: RedmiWatch5_6 v${{ steps.artifact.outputs.version }}（${{ steps.artifact.outputs.short_sha }}）
           body: |
-            设备: ${{ matrix.device_name }}
+            设备: RedmiWatch5_6
+            版本: v${{ steps.artifact.outputs.version }}
             提交: ${{ github.sha }}
+            预发布: ${{ github.event.inputs.prerelease != 'false' }}
             产物: Box Vela (com.mmckb.boxvela)
             触发: ${{ github.event_name }}
-          make_latest: "false"
-          prerelease: true
+          prerelease: ${{ github.event.inputs.prerelease != 'false' }}
+          make_latest: ${{ github.event.inputs.prerelease == 'false' }}
           files: ${{ steps.artifact.outputs.rpk_path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传构建日志（失败时）
-        if: failure() && steps.should_run.outputs.should_run == 'true'
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs-${{ matrix.device_name }}
+          name: build-logs-RedmiWatch5_6
           path: |
             artifacts/
             dist/

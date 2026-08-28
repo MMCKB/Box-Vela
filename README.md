@@ -1,6 +1,6 @@
 # Box Vela
 
-> 运行在 Xiaomi Vela OS 上的独立工具箱快应用。功能提取自 [HyperBilibili-Next](https://github.com/MMCKB/HyperBilibili-Next) 的工具箱，无需登录哔哩哔哩账号即可使用。
+> 运行在 Xiaomi Vela OS 上的独立工具箱快应用。
 
 ![Build Status](https://github.com/MMCKB/Box-Vela/actions/workflows/build.yml/badge.svg)
 [![GitHub Release](https://img.shields.io/github/v/release/MMCKB/Box-Vela)](https://github.com/MMCKB/Box-Vela/releases)
@@ -16,14 +16,14 @@
 - **倒数日** — 纪念日/倒计时管理，支持指定日期与前后天数两种模式
 - **便签** — 密码保护的私密便签（AES 加密存储），支持多便签编辑
 
-键盘输入由 [Vela_input_method](https://github.com/MMCKB/Vela_input_method) 提供，支持拼音九键/全键、中英文切换、表情输入。
+键盘输入由 [Vela_input_method](https://github.com/MMCKB/Vela_input_method) 提供，支持拼音九键/全键、中英文切换。
 
 ## 📥 安装
 
-对于普通用户，只需从 [Releases](https://github.com/MMCKB/Box-Vela/releases) 下载对应设备的 RPK 文件（`box-vela-RedmiWatch5_6-*.rpk` 或 `box-vela-S3S4-*.rpk`），然后安装到设备上即可。
+对于普通用户，只需从 [Releases](https://github.com/MMCKB/Box-Vela/releases) 下载对应设备的 RPK 文件（`box-vela-RedmiWatch5_6-*.rpk` ，然后安装到设备上即可。
 
 - 包名：`com.mmckb.boxvela`
-- 已适配设备：Redmi Watch 5（方屏 466/480）、小米 Watch S3/S4（圆屏 466）
+- 已适配设备：Redmi Watch 5（方屏 466/480）
 
 ## 🛠️ 开发环境搭建
 
@@ -49,11 +49,6 @@ VARIANT_DESIGN_WIDTH=466 node scripts/build-rpk.js
 然后像普通快应用一样进行开发即可。
 
 开发文档可参考小米的[官方文档](https://iot.mi.com/vela/quickapp)。
-
-## 🙏 鸣谢
-
-- [HyperBilibili / 澎湃哔哩](https://github.com/Searchstars/HyperBilibili) 与 [HyperBilibili-Next](https://github.com/MMCKB/HyperBilibili-Next) — 本项目功能来源
-- [Vela_input_method](https://github.com/MMCKB/Vela_input_method) — 输入法组件
 
 ## 📄 许可证
 

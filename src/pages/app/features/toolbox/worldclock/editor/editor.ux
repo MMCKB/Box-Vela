@@ -1,16 +1,21 @@
 <import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
-<import name="full-screen-input" src="@components/FullScreenInput/FullScreenInput.ux"></import>
 
 <template>
   <div class="page">
     <scroll class="editor-scroll {{scrclass}}" scroll-y="true" bounces="false">
       <title-bar title="worldclock.editCities"></title-bar>
       <div class="editor-content">
-        <div class="search-card" onclick="OpenSearch">
-          <text class="search-icon">⌕</text>
-          <text class="search-text {{queryText ? 'search-text-active' : ''}}">{{ queryText ? queryText : $t("worldclock.searchPlaceholder") }}</text>
-          <text class="search-clear" if="{{queryText}}" onclick="ClearSearch">×</text>
-        </div>
+        <scroll class="region-strip" scroll-x="true" bounces="false">
+          <div class="region-inner">
+            <div class="region-chip {{activeRegion == 'all' ? 'region-chip-selected' : ''}}" onclick="SetRegion('all')"><text class="region-chip-text">{{ $t("worldclock.regionAll") }}</text></div>
+            <div class="region-chip {{activeRegion == 'asia' ? 'region-chip-selected' : ''}}" onclick="SetRegion('asia')"><text class="region-chip-text">{{ $t("worldclock.regionAsia") }}</text></div>
+            <div class="region-chip {{activeRegion == 'europe' ? 'region-chip-selected' : ''}}" onclick="SetRegion('europe')"><text class="region-chip-text">{{ $t("worldclock.regionEurope") }}</text></div>
+            <div class="region-chip {{activeRegion == 'africa' ? 'region-chip-selected' : ''}}" onclick="SetRegion('africa')"><text class="region-chip-text">{{ $t("worldclock.regionAfrica") }}</text></div>
+            <div class="region-chip {{activeRegion == 'namerica' ? 'region-chip-selected' : ''}}" onclick="SetRegion('namerica')"><text class="region-chip-text">{{ $t("worldclock.regionNAmerica") }}</text></div>
+            <div class="region-chip {{activeRegion == 'samerica' ? 'region-chip-selected' : ''}}" onclick="SetRegion('samerica')"><text class="region-chip-text">{{ $t("worldclock.regionSAmerica") }}</text></div>
+            <div class="region-chip {{activeRegion == 'oceania' ? 'region-chip-selected' : ''}}" onclick="SetRegion('oceania')"><text class="region-chip-text">{{ $t("worldclock.regionOceania") }}</text></div>
+          </div>
+        </scroll>
         <text class="selected-count">{{ $t("worldclock.selected") }} {{ selectedKeys.length }} / {{ WORLD_TOTAL }}</text>
         <text class="editor-empty" if="{{visibleRows.length == 0}}">{{ $t("worldclock.noMatch") }}</text>
         <div class="city-row {{ $item.selected ? 'city-row-selected' : '' }}" for="{{visibleRows}}" onclick="ToggleCity($item)">
@@ -26,7 +31,6 @@
       </div>
       <text style="height: 30px"></text>
     </scroll>
-    <full-screen-input style="position: absolute" if="{{showInput}}" initial-text="{{inputSeed}}" @send="SearchDone" @exit="SearchExit"></full-screen-input>
   </div>
 </template>
 
@@ -35,15 +39,13 @@ import { storage } from "@src/tsimports"
 import { WORLD_COUNTRIES, DEFAULT_SELECTION, OffsetLabel } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
-// 手表内存有限：列表分页渲染，避免一次性创建近千个节点
-const PAGE_SIZE = 30
+// 手表内存有限：列表分页渲染，避免一次性创建过多节点
+const PAGE_SIZE = 25
 
 export default {
   private: {
     scrclass: "",
-    queryText: "",
-    inputSeed: "",
-    showInput: false,
+    activeRegion: "all",
     selectedKeys: [],
     visibleRows: [],
     hiddenCount: 0,
@@ -83,38 +85,18 @@ export default {
       value: JSON.stringify(this.selectedKeys)
     })
   },
-  OpenSearch() {
-    this.inputSeed = this.queryText
-    this.showInput = true
-  },
-  SearchDone(evt) {
-    const content = String(evt.detail && evt.detail.content ? evt.detail.content : "").trim()
-    this.showInput = false
-    this.queryText = content
-    this.RebuildRows()
-  },
-  SearchExit() {
-    this.showInput = false
-  },
-  ClearSearch() {
-    this.queryText = ""
+  SetRegion(region) {
+    this.activeRegion = region
     this.RebuildRows()
   },
   RebuildRows(keepWindow) {
     const useEnglish = this.$t("worldclock.langCode") == "en"
-    const query = this.queryText.toLowerCase()
     const selectedSet = {}
     for (const key of this.selectedKeys) {
       selectedSet[key] = true
     }
     const rows = WORLD_COUNTRIES.filter(country => {
-      if (!query) {
-        return true
-      }
-      return country.zh.indexOf(query) >= 0
-        || country.en.toLowerCase().indexOf(query) >= 0
-        || country.key.replace(/-/g, " ").indexOf(query) >= 0
-        || country.key.indexOf(query.replace(/ /g, "-")) >= 0
+      return this.activeRegion == "all" || country.region == this.activeRegion
     }).map(country => ({
       key: country.key,
       label: useEnglish ? country.en : country.zh,

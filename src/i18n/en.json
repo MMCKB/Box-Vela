@@ -29,6 +29,8 @@
         "mealDescription": "Random meal ideas",
         "massager": "Vibration",
         "massagerDescription": "Four vibration patterns",
+        "speedtest": "Speed Test",
+        "speedtestDescription": "Measure network speed",
         "viewGrid": "Grid",
         "viewList": "List"
     },
@@ -97,6 +99,18 @@
         "start": "Start",
         "stop": "Stop",
         "hint": "Stops when you leave"
+    },
+    "speedtest": {
+        "title": "Speed Test",
+        "start": "Start",
+        "testing": "Testing…",
+        "mbps": "Mbps",
+        "ping": "Ping",
+        "network": "Network",
+        "phasePing": "Pinging…",
+        "phaseDownload": "Downloading…",
+        "fail": "Failed, check network",
+        "last": "Last"
     },
     "worldclock": {
         "title": "World Clock",

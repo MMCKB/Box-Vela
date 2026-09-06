@@ -101,6 +101,14 @@
           </div>
           <text class="toolbox-card-arrow">›</text>
         </div>
+        <div class="toolbox-card toolbox-card-next" onclick="OpenSpeedtest">
+          <div class="toolbox-card-icon"><text class="toolbox-card-icon-text">速</text></div>
+          <div class="toolbox-card-copy">
+            <text class="toolbox-card-title">{{ $t("toolbox.speedtest") }}</text>
+            <text class="toolbox-card-subtitle">{{ $t("toolbox.speedtestDescription") }}</text>
+          </div>
+          <text class="toolbox-card-arrow">›</text>
+        </div>
         <div class="toolbox-card toolbox-card-next" onclick="OpenMeal">
           <div class="toolbox-card-icon"><text class="toolbox-card-icon-text">食</text></div>
           <div class="toolbox-card-copy">
@@ -155,6 +163,7 @@ const TOOLS = [
   { key: "password", icon: "密", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
   { key: "random", icon: "随", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
   { key: "battery", icon: "电", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
+  { key: "speedtest", icon: "速", iconBg: "#4A3A1A", iconFg: "#FFD34E" },
   { key: "meal", icon: "食", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
   { key: "massager", icon: "振", iconBg: "#FF7DA8", iconFg: "#FFFFFF" }
 ]
@@ -172,6 +181,7 @@ const ROUTES = {
   password: "pages/app/features/toolbox/password",
   random: "pages/app/features/toolbox/random",
   battery: "pages/app/features/toolbox/battery",
+  speedtest: "pages/app/features/toolbox/speedtest",
   meal: "pages/app/features/toolbox/meal",
   massager: "pages/app/features/toolbox/massager"
 }
@@ -263,6 +273,9 @@ export default {
   },
   OpenBattery() {
     router.push({ uri: "pages/app/features/toolbox/battery" })
+  },
+  OpenSpeedtest() {
+    router.push({ uri: "pages/app/features/toolbox/speedtest" })
   },
   OpenMeal() {
     router.push({ uri: "pages/app/features/toolbox/meal" })

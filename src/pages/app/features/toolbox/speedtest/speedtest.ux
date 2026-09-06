@@ -1,0 +1,122 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <div class="scroll speedtest-shell {{scrclass}}">
+    <title-bar title="speedtest.title"></title-bar>
+    <div class="speedtest-content">
+      <div class="result-card">
+        <text class="speed-value">{{ mbpsText }}</text>
+        <text class="speed-unit">{{ $t("speedtest.mbps") }}</text>
+        <text class="speed-status" if="{{statusText}}">{{ statusText }}</text>
+      </div>
+      <div class="metric-row">
+        <div class="metric-item">
+          <text class="metric-label">{{ $t("speedtest.ping") }}</text>
+          <text class="metric-value">{{ pingText }}</text>
+        </div>
+        <div class="metric-item">
+          <text class="metric-label">{{ $t("speedtest.network") }}</text>
+          <text class="metric-value">{{ networkText }}</text>
+        </div>
+      </div>
+      <text class="last-text" if="{{lastText}}">{{ lastText }}</text>
+      <div class="start-btn {{testing ? 'start-btn-testing' : ''}}" onclick="StartTest">
+        <text class="start-btn-text">{{ testing ? $t("speedtest.testing") : $t("speedtest.start") }}</text>
+      </div>
+    </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { fetch, storage } from "@src/tsimports"
+
+const PING_URL = "https://speed.cloudflare.com/__down?bytes=1"
+const DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=1000000"
+const DOWNLOAD_BYTES = 1000000
+const PING_TIMES = 3
+const LAST_KEY = "speedtest_last"
+
+export default {
+  private: {
+    scrclass: "",
+    testing: false,
+    mbpsText: "--",
+    pingText: "--",
+    statusText: "",
+    networkText: "--",
+    lastText: ""
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    this.networkText = global.DEVICE_NETWORK_TYPE || "--"
+    storage.get({
+      key: LAST_KEY,
+      success: data => {
+        try {
+          const r = JSON.parse(data)
+          if (r && r.mbps) {
+            this.lastText = this.$t("speedtest.last") + " " + r.date + " · " + r.mbps + " Mbps"
+          }
+        } catch (e) {}
+      },
+      fail: () => {}
+    })
+  },
+  async FetchUrl(url) {
+    const res = await fetch.fetch({
+      url: url,
+      responseType: "text"
+    })
+    const data = res && res.data
+    if (typeof data != "string") {
+      throw new Error("payload")
+    }
+    return data
+  },
+  async StartTest() {
+    if (this.testing) {
+      return
+    }
+    this.testing = true
+    try {
+      this.statusText = this.$t("speedtest.phasePing")
+      let total = 0
+      let ok = 0
+      for (let i = 0; i < PING_TIMES; i++) {
+        const t0 = Date.now()
+        await this.FetchUrl(PING_URL)
+        total += Date.now() - t0
+        ok++
+      }
+      this.pingText = ok ? Math.round(total / ok) + " ms" : "--"
+      this.statusText = this.$t("speedtest.phaseDownload")
+      const t1 = Date.now()
+      const data = await this.FetchUrl(DOWNLOAD_URL)
+      const seconds = Math.max(0.05, (Date.now() - t1) / 1000)
+      const bytes = Math.min(data.length, DOWNLOAD_BYTES * 2)
+      const mbps = (bytes * 8) / seconds / 1000000
+      this.mbpsText = mbps.toFixed(1)
+      this.statusText = ""
+      const pad = value => (value < 10 ? "0" + value : String(value))
+      const now = new Date()
+      const date = pad(now.getMonth() + 1) + "-" + pad(now.getDate()) + " " + pad(now.getHours()) + ":" + pad(now.getMinutes())
+      storage.set({
+        key: LAST_KEY,
+        value: JSON.stringify({ mbps: mbps.toFixed(1), date: date })
+      })
+      this.lastText = this.$t("speedtest.last") + " " + date + " · " + mbps.toFixed(1) + " Mbps"
+    } catch (e) {
+      this.statusText = this.$t("speedtest.fail")
+      this.mbpsText = "--"
+    }
+    this.testing = false
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./speedtest.less";
+</style>

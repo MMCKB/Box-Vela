@@ -1,20 +1,23 @@
 <template>
   <div class="page">
-    <text class="muyu-clock">{{ currentTime }}</text>
-    <text class="muyu-num">{{ num }}</text>
-    <text class="muyu-tip" style="opacity: {{ tipOpacity }};">{{ tipText }}</text>
-    <image class="muyu-img" src="/common/images/muyu.png" onclick="handleClick"></image>
-    <image class="muyu-stele" src="/common/images/fishsd.png"></image>
-    <scroll class="wish-strip" scroll-x="true" bounces="false">
-      <div class="wish-inner">
-        <div class="wish-chip {{wishIndex == 0 ? 'wish-chip-selected' : ''}}" onclick="SetWish(0)"><text class="wish-chip-text">{{ $t("muyu.wish_0") }}</text></div>
-        <div class="wish-chip {{wishIndex == 1 ? 'wish-chip-selected' : ''}}" onclick="SetWish(1)"><text class="wish-chip-text">{{ $t("muyu.wish_1") }}</text></div>
-        <div class="wish-chip {{wishIndex == 2 ? 'wish-chip-selected' : ''}}" onclick="SetWish(2)"><text class="wish-chip-text">{{ $t("muyu.wish_2") }}</text></div>
-        <div class="wish-chip {{wishIndex == 3 ? 'wish-chip-selected' : ''}}" onclick="SetWish(3)"><text class="wish-chip-text">{{ $t("muyu.wish_3") }}</text></div>
-        <div class="wish-chip {{wishIndex == 4 ? 'wish-chip-selected' : ''}}" onclick="SetWish(4)"><text class="wish-chip-text">{{ $t("muyu.wish_4") }}</text></div>
-        <div class="wish-chip {{wishIndex == 5 ? 'wish-chip-selected' : ''}}" onclick="SetWish(5)"><text class="wish-chip-text">{{ $t("muyu.wish_5") }}</text></div>
-        <div class="wish-chip {{wishIndex == 6 ? 'wish-chip-selected' : ''}}" onclick="SetWish(6)"><text class="wish-chip-text">{{ $t("muyu.wish_6") }}</text></div>
-      </div>
+    <scroll class="scroll {{scrclass}}" scroll-y="true" bounces="false">
+      <title-bar title="muyu.title"></title-bar>
+      <text class="muyu-num">{{ num }}</text>
+      <text class="muyu-tip" style="opacity: {{ tipOpacity }};">{{ tipText }}</text>
+      <scroll class="wish-strip" scroll-x="true" bounces="false">
+        <div class="wish-inner">
+          <div class="wish-chip {{wishIndex == 0 ? 'wish-chip-selected' : ''}}" onclick="SetWish(0)"><text class="wish-chip-text">{{ $t("muyu.wish_0") }}</text></div>
+          <div class="wish-chip {{wishIndex == 1 ? 'wish-chip-selected' : ''}}" onclick="SetWish(1)"><text class="wish-chip-text">{{ $t("muyu.wish_1") }}</text></div>
+          <div class="wish-chip {{wishIndex == 2 ? 'wish-chip-selected' : ''}}" onclick="SetWish(2)"><text class="wish-chip-text">{{ $t("muyu.wish_2") }}</text></div>
+          <div class="wish-chip {{wishIndex == 3 ? 'wish-chip-selected' : ''}}" onclick="SetWish(3)"><text class="wish-chip-text">{{ $t("muyu.wish_3") }}</text></div>
+          <div class="wish-chip {{wishIndex == 4 ? 'wish-chip-selected' : ''}}" onclick="SetWish(4)"><text class="wish-chip-text">{{ $t("muyu.wish_4") }}</text></div>
+          <div class="wish-chip {{wishIndex == 5 ? 'wish-chip-selected' : ''}}" onclick="SetWish(5)"><text class="wish-chip-text">{{ $t("muyu.wish_5") }}</text></div>
+          <div class="wish-chip {{wishIndex == 6 ? 'wish-chip-selected' : ''}}" onclick="SetWish(6)"><text class="wish-chip-text">{{ $t("muyu.wish_6") }}</text></div>
+        </div>
+      </scroll>
+      <image class="muyu-img" src="/common/images/muyu.png" onclick="handleClick"></image>
+      <image class="muyu-stele" src="/common/images/fishsd.png"></image>
+      <text style="height: 30px"></text>
     </scroll>
   </div>
 </template>
@@ -30,7 +33,7 @@ const WISH_COUNT = 7
 
 export default {
   private: {
-    currentTime: "00:00",
+    scrclass: "",
     num: 0,
     tipText: "",
     tipOpacity: 0,
@@ -40,23 +43,11 @@ export default {
     global.ui.InitPage(this)
     this.loadMerit()
     this.loadWish()
-    this.UpdateClock()
-    this.clockTimer = setInterval(() => {
-      this.UpdateClock()
-    }, 1000)
   },
   onDestroy() {
-    if (this.clockTimer) {
-      clearInterval(this.clockTimer)
-    }
     if (this.tipTimer) {
       clearTimeout(this.tipTimer)
     }
-  },
-  UpdateClock() {
-    const now = new Date()
-    const pad = value => (value < 10 ? "0" + value : String(value))
-    this.currentTime = pad(now.getHours()) + ":" + pad(now.getMinutes())
   },
   WishLabel() {
     const useEnglish = this.$t("worldclock.langCode") == "en"
@@ -88,7 +79,6 @@ export default {
           this.num = parsed
           return
         }
-        // 迁移旧计数
         storage.get({
           key: OLD_TOTAL_KEY,
           success: old => {

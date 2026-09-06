@@ -8,9 +8,7 @@
       <text class="muyu-merit-label">{{ $t("muyu.merit") }}</text>
 
       <div class="muyu-tap-area" onclick="Strike">
-        <div class="muyu-body {{struck ? 'muyu-body-struck' : ''}}">
-          <text class="muyu-body-text">木鱼</text>
-        </div>
+        <image class="muyu-img {{struck ? 'muyu-img-struck' : ''}}" src="/common/images/muyu.png"></image>
       </div>
 
       <div class="muyu-footer">

@@ -20,65 +20,21 @@
       </div>
       <text style="height: 30px"></text>
     </scroll>
-    <div if="{{editDialogVisible}}" class="unit-dialog-mask">
-      <div class="unit-dialog">
-        <div class="unit-dialog-heading">
-          <text class="unit-dialog-title">{{ $t("worldclock.editCities") }}</text>
-          <div class="unit-dialog-close" onclick="CloseEditor"><text class="unit-dialog-close-text">×</text></div>
-        </div>
-        <scroll class="unit-dialog-list" scroll-y="true" bounces="false">
-          <div class="city-option {{ $item.selected ? 'city-option-selected' : '' }}" for="{{catalogRows}}" onclick="ToggleCity($item)">
-            <text class="city-option-label">{{ $item.label }}</text>
-            <text class="city-option-offset">{{ $item.offsetLabel }}</text>
-            <text class="city-option-check">{{ $item.selected ? '✓' : '' }}</text>
-          </div>
-        </scroll>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import router from "@system.router"
 import { storage } from "@src/tsimports"
+import { WORLD_CITIES, DEFAULT_SELECTION } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
-const DEFAULT_CITIES = ["beijing", "tokyo", "sydney", "mumbai", "dubai", "moscow", "paris", "london", "newyork", "losangeles"]
-
-// 目录仅收录固定 UTC 偏移的城市（不处理夏令时）
-const TIMEZONES = [
-  { key: "auckland", offsetMinutes: 720 },
-  { key: "sydney", offsetMinutes: 600 },
-  { key: "seoul", offsetMinutes: 540 },
-  { key: "tokyo", offsetMinutes: 540 },
-  { key: "hongkong", offsetMinutes: 480 },
-  { key: "beijing", offsetMinutes: 480 },
-  { key: "manila", offsetMinutes: 480 },
-  { key: "singapore", offsetMinutes: 480 },
-  { key: "bangkok", offsetMinutes: 420 },
-  { key: "jakarta", offsetMinutes: 420 },
-  { key: "mumbai", offsetMinutes: 330 },
-  { key: "dubai", offsetMinutes: 240 },
-  { key: "moscow", offsetMinutes: 180 },
-  { key: "cairo", offsetMinutes: 120 },
-  { key: "berlin", offsetMinutes: 60 },
-  { key: "rome", offsetMinutes: 60 },
-  { key: "paris", offsetMinutes: 60 },
-  { key: "london", offsetMinutes: 0 },
-  { key: "saopaulo", offsetMinutes: -180 },
-  { key: "newyork", offsetMinutes: -300 },
-  { key: "toronto", offsetMinutes: -300 },
-  { key: "losangeles", offsetMinutes: -480 },
-  { key: "vancouver", offsetMinutes: -480 },
-  { key: "honolulu", offsetMinutes: -600 }
-]
 
 export default {
   private: {
     scrclass: "",
     cityRows: [],
     selectedKeys: [],
-    editDialogVisible: false,
-    catalogRows: [],
     tickTimer: null
   },
   onInit() {
@@ -86,7 +42,8 @@ export default {
     this.LoadSelection()
   },
   onShow() {
-    this.RefreshTimes()
+    // 从编辑页返回时重新加载已选城市
+    this.LoadSelection()
     if (!this.tickTimer) {
       this.tickTimer = setInterval(() => {
         this.RefreshTimes()
@@ -112,77 +69,44 @@ export default {
         try {
           const parsed = JSON.parse(data)
           if (Array.isArray(parsed)) {
-            const known = new Set(TIMEZONES.map(tz => tz.key))
+            const known = new Set(WORLD_CITIES.map(city => city.key))
             this.selectedKeys = parsed.filter(key => known.has(key))
           }
         } catch (e) {
           this.selectedKeys = []
         }
         if (this.selectedKeys.length == 0) {
-          this.selectedKeys = DEFAULT_CITIES
+          this.selectedKeys = DEFAULT_SELECTION
         }
         this.RefreshTimes()
       },
       fail: () => {
-        this.selectedKeys = DEFAULT_CITIES
+        this.selectedKeys = DEFAULT_SELECTION
         this.RefreshTimes()
       }
     })
   },
-  SaveSelection() {
-    storage.set({
-      key: CITIES_KEY,
-      value: JSON.stringify(this.selectedKeys)
-    })
-  },
   OpenEditor() {
-    this.catalogRows = TIMEZONES.map(tz => {
-      const sign = tz.offsetMinutes >= 0 ? "+" : "-"
-      const abs = Math.abs(tz.offsetMinutes)
-      return {
-        key: tz.key,
-        label: this.$t("worldclock.city_" + tz.key),
-        offsetLabel: "UTC" + sign + Math.floor(abs / 60) + (abs % 60 ? ":" + (abs % 60) : ""),
-        selected: this.selectedKeys.indexOf(tz.key) >= 0
-      }
-    })
-    this.editDialogVisible = true
-  },
-  CloseEditor() {
-    this.editDialogVisible = false
-  },
-  ToggleCity(item) {
-    const index = this.selectedKeys.indexOf(item.key)
-    if (index >= 0) {
-      if (this.selectedKeys.length == 1) {
-        return
-      }
-      this.selectedKeys = this.selectedKeys.filter(key => key != item.key)
-      this.catalogRows = this.catalogRows.map(row => row.key == item.key ? { ...row, selected: false } : row)
-    } else {
-      this.selectedKeys = this.selectedKeys.concat([item.key])
-      this.catalogRows = this.catalogRows.map(row => row.key == item.key ? { ...row, selected: true } : row)
-    }
-    this.SaveSelection()
-    this.RefreshTimes()
+    router.push({ uri: "pages/app/features/toolbox/worldclock/editor" })
   },
   RefreshTimes() {
     if (this.selectedKeys.length == 0) {
       this.cityRows = []
       return
     }
+    const useEnglish = this.$t("worldclock.langCode") == "en"
     const now = new Date()
     const localOffsetMinutes = -now.getTimezoneOffset()
     const localDateKey = this.DateKey(now)
-    const selected = TIMEZONES.filter(tz => this.selectedKeys.indexOf(tz.key) >= 0)
+    const selected = WORLD_CITIES.filter(city => this.selectedKeys.indexOf(city.key) >= 0)
     selected.sort((a, b) => b.offsetMinutes - a.offsetMinutes)
     const pad = value => (value < 10 ? "0" + value : String(value))
-    this.cityRows = selected.map(tz => {
+    this.cityRows = selected.map(city => {
       // 目标时区墙上时间 = 本地时刻 + 时区差，再用 getUTC* 读取
-      const zoned = new Date(now.getTime() + (tz.offsetMinutes - localOffsetMinutes) * 60000)
+      const zoned = new Date(now.getTime() + (city.offsetMinutes - localOffsetMinutes) * 60000)
       const zonedDateKey = this.DateKeyUTC(zoned)
       let badge = ""
-      if (tz.offsetMinutes == localOffsetMinutes) {
+      if (city.offsetMinutes == localOffsetMinutes) {
         badge = this.$t("worldclock.local")
       } else if (zonedDateKey > localDateKey) {
         badge = this.$t("worldclock.tomorrow")
@@ -190,7 +114,7 @@ export default {
         badge = this.$t("worldclock.yesterday")
       }
       return {
-        label: this.$t("worldclock.city_" + tz.key),
+        label: useEnglish ? city.en : city.zh,
         badge: badge,
         time: pad(zoned.getUTCHours()) + ":" + pad(zoned.getUTCMinutes()) + ":" + pad(zoned.getUTCSeconds()),
         date: pad(zoned.getUTCMonth() + 1) + "-" + pad(zoned.getUTCDate())

@@ -107,6 +107,9 @@
             },
             "pages/app/features/toolbox/worldclock": {
                 "component": "worldclock"
+            },
+            "pages/app/features/toolbox/worldclock/editor": {
+                "component": "editor"
             }
         }
     }

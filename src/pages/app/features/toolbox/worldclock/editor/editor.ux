@@ -1,0 +1,143 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+<import name="full-screen-input" src="@components/FullScreenInput/FullScreenInput.ux"></import>
+
+<template>
+  <div class="page">
+    <scroll class="editor-scroll {{scrclass}}" scroll-y="true" bounces="false">
+      <title-bar title="worldclock.editCities"></title-bar>
+      <div class="editor-content">
+        <div class="search-card" onclick="OpenSearch">
+          <text class="search-icon">⌕</text>
+          <text class="search-text {{queryText ? 'search-text-active' : ''}}">{{ queryText ? queryText : $t("worldclock.searchPlaceholder") }}</text>
+          <text class="search-clear" if="{{queryText}}" onclick="ClearSearch">×</text>
+        </div>
+        <text class="selected-count">{{ $t("worldclock.selected") }} {{ selectedKeys.length }} / {{ WORLD_TOTAL }}</text>
+        <text class="editor-empty" if="{{visibleRows.length == 0}}">{{ $t("worldclock.noMatch") }}</text>
+        <div class="city-row {{ $item.selected ? 'city-row-selected' : '' }}" for="{{visibleRows}}" onclick="ToggleCity($item)">
+          <div class="city-copy">
+            <text class="city-name">{{ $item.label }}</text>
+            <text class="city-sub">{{ $item.sub }}</text>
+          </div>
+          <text class="city-offset">{{ $item.offsetLabel }}</text>
+          <text class="city-check">{{ $item.selected ? '✓' : '' }}</text>
+        </div>
+      </div>
+      <text style="height: 30px"></text>
+    </scroll>
+    <full-screen-input style="position: absolute" if="{{showInput}}" initial-text="{{inputSeed}}" @send="SearchDone" @exit="SearchExit"></full-screen-input>
+  </div>
+</template>
+
+<script>
+import { storage } from "@src/tsimports"
+import { WORLD_CITIES, DEFAULT_SELECTION, OffsetLabel } from "@src/worldcities.ts"
+
+const CITIES_KEY = "worldclock_selected"
+
+export default {
+  private: {
+    scrclass: "",
+    queryText: "",
+    inputSeed: "",
+    showInput: false,
+    selectedKeys: [],
+    visibleRows: [],
+    WORLD_TOTAL: WORLD_CITIES.length
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    this.LoadSelection()
+  },
+  LoadSelection() {
+    storage.get({
+      key: CITIES_KEY,
+      success: data => {
+        try {
+          const parsed = JSON.parse(data)
+          if (Array.isArray(parsed)) {
+            const known = new Set(WORLD_CITIES.map(city => city.key))
+            this.selectedKeys = parsed.filter(key => known.has(key))
+          }
+        } catch (e) {
+          this.selectedKeys = []
+        }
+        if (this.selectedKeys.length == 0) {
+          this.selectedKeys = DEFAULT_SELECTION
+        }
+        this.RebuildRows()
+      },
+      fail: () => {
+        this.selectedKeys = DEFAULT_SELECTION
+        this.RebuildRows()
+      }
+    })
+  },
+  SaveSelection() {
+    storage.set({
+      key: CITIES_KEY,
+      value: JSON.stringify(this.selectedKeys)
+    })
+  },
+  OpenSearch() {
+    this.inputSeed = this.queryText
+    this.showInput = true
+  },
+  SearchDone(evt) {
+    const content = String(evt.detail && evt.detail.content ? evt.detail.content : "").trim()
+    this.showInput = false
+    this.queryText = content
+    this.RebuildRows()
+  },
+  SearchExit() {
+    this.showInput = false
+  },
+  ClearSearch() {
+    this.queryText = ""
+    this.RebuildRows()
+  },
+  RebuildRows() {
+    const useEnglish = this.$t("worldclock.langCode") == "en"
+    const query = this.queryText.toLowerCase()
+    const rows = WORLD_CITIES.filter(city => {
+      if (!query) {
+        return true
+      }
+      return city.zh.toLowerCase().indexOf(query) >= 0
+        || city.en.toLowerCase().indexOf(query) >= 0
+        || city.key.indexOf(query) >= 0
+    }).map(city => ({
+      key: city.key,
+      label: useEnglish ? city.en : city.zh,
+      sub: useEnglish ? city.zh : city.en,
+      offsetLabel: OffsetLabel(city.offsetMinutes),
+      selected: this.selectedKeys.indexOf(city.key) >= 0
+    }))
+    rows.sort((a, b) => {
+      if (a.selected != b.selected) {
+        return a.selected ? -1 : 1
+      }
+      return 0
+    })
+    this.visibleRows = rows
+  },
+  ToggleCity(item) {
+    const index = this.selectedKeys.indexOf(item.key)
+    if (index >= 0) {
+      // 至少保留一个城市
+      if (this.selectedKeys.length == 1) {
+        return
+      }
+      this.selectedKeys = this.selectedKeys.filter(key => key != item.key)
+    } else {
+      this.selectedKeys = this.selectedKeys.concat([item.key])
+    }
+    this.SaveSelection()
+    this.RebuildRows()
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./editor.less";
+</style>

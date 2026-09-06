@@ -26,7 +26,7 @@
 <script>
 import router from "@system.router"
 import { storage } from "@src/tsimports"
-import { WORLD_CITIES, DEFAULT_SELECTION } from "@src/worldcities.ts"
+import { WORLD_COUNTRIES, DEFAULT_SELECTION, EffectiveOffset } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
 
@@ -69,7 +69,7 @@ export default {
         try {
           const parsed = JSON.parse(data)
           if (Array.isArray(parsed)) {
-            const known = new Set(WORLD_CITIES.map(city => city.key))
+            const known = new Set(WORLD_COUNTRIES.map(country => country.key))
             this.selectedKeys = parsed.filter(key => known.has(key))
           }
         } catch (e) {
@@ -98,15 +98,16 @@ export default {
     const now = new Date()
     const localOffsetMinutes = -now.getTimezoneOffset()
     const localDateKey = this.DateKey(now)
-    const selected = WORLD_CITIES.filter(city => this.selectedKeys.indexOf(city.key) >= 0)
-    selected.sort((a, b) => b.offsetMinutes - a.offsetMinutes)
+    const selected = WORLD_COUNTRIES.filter(country => this.selectedKeys.indexOf(country.key) >= 0)
+    selected.sort((a, b) => EffectiveOffset(b, now) - EffectiveOffset(a, now))
     const pad = value => (value < 10 ? "0" + value : String(value))
     this.cityRows = selected.map(city => {
       // 目标时区墙上时间 = 本地时刻 + 时区差，再用 getUTC* 读取
-      const zoned = new Date(now.getTime() + (city.offsetMinutes - localOffsetMinutes) * 60000)
+      const effOffset = EffectiveOffset(country, now)
+      const zoned = new Date(now.getTime() + (effOffset - localOffsetMinutes) * 60000)
       const zonedDateKey = this.DateKeyUTC(zoned)
       let badge = ""
-      if (city.offsetMinutes == localOffsetMinutes) {
+      if (effOffset == localOffsetMinutes) {
         badge = this.$t("worldclock.local")
       } else if (zonedDateKey > localDateKey) {
         badge = this.$t("worldclock.tomorrow")
@@ -114,7 +115,7 @@ export default {
         badge = this.$t("worldclock.yesterday")
       }
       return {
-        label: useEnglish ? city.en : city.zh,
+        label: useEnglish ? country.en : country.zh,
         badge: badge,
         time: pad(zoned.getUTCHours()) + ":" + pad(zoned.getUTCMinutes()) + ":" + pad(zoned.getUTCSeconds()),
         date: pad(zoned.getUTCMonth() + 1) + "-" + pad(zoned.getUTCDate())

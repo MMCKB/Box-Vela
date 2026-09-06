@@ -30,7 +30,7 @@
 
 <script>
 import { storage } from "@src/tsimports"
-import { WORLD_CITIES, DEFAULT_SELECTION, OffsetLabel } from "@src/worldcities.ts"
+import { WORLD_COUNTRIES, DEFAULT_SELECTION, OffsetLabel } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
 
@@ -42,7 +42,7 @@ export default {
     showInput: false,
     selectedKeys: [],
     visibleRows: [],
-    WORLD_TOTAL: WORLD_CITIES.length
+    WORLD_TOTAL: WORLD_COUNTRIES.length
   },
   onInit() {
     global.ui.InitPage(this)
@@ -55,7 +55,7 @@ export default {
         try {
           const parsed = JSON.parse(data)
           if (Array.isArray(parsed)) {
-            const known = new Set(WORLD_CITIES.map(city => city.key))
+            const known = new Set(WORLD_COUNTRIES.map(country => country.key))
             this.selectedKeys = parsed.filter(key => known.has(key))
           }
         } catch (e) {
@@ -98,19 +98,20 @@ export default {
   RebuildRows() {
     const useEnglish = this.$t("worldclock.langCode") == "en"
     const query = this.queryText.toLowerCase()
-    const rows = WORLD_CITIES.filter(city => {
+    const rows = WORLD_COUNTRIES.filter(country => {
       if (!query) {
         return true
       }
-      return city.zh.toLowerCase().indexOf(query) >= 0
-        || city.en.toLowerCase().indexOf(query) >= 0
-        || city.key.indexOf(query) >= 0
-    }).map(city => ({
-      key: city.key,
-      label: useEnglish ? city.en : city.zh,
-      sub: useEnglish ? city.zh : city.en,
-      offsetLabel: OffsetLabel(city.offsetMinutes),
-      selected: this.selectedKeys.indexOf(city.key) >= 0
+      return country.zh.indexOf(query) >= 0
+        || country.en.toLowerCase().indexOf(query) >= 0
+        || country.key.replace(/-/g, " ").indexOf(query) >= 0
+        || country.key.indexOf(query.replace(/ /g, "-")) >= 0
+    }).map(country => ({
+      key: country.key,
+      label: useEnglish ? country.en : country.zh,
+      sub: useEnglish ? country.zh : country.en,
+      offsetLabel: OffsetLabel(country.offsetMinutes),
+      selected: this.selectedKeys.indexOf(country.key) >= 0
     }))
     rows.sort((a, b) => {
       if (a.selected != b.selected) {

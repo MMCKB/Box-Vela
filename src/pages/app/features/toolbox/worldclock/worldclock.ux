@@ -28,7 +28,6 @@ import { storage } from "@src/tsimports"
 import { WORLD_COUNTRIES, DEFAULT_SELECTION, EffectiveOffset } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
-const PAGE_NAME = "pages/app/features/toolbox/worldclock"
 
 export default {
   private: {
@@ -109,10 +108,6 @@ export default {
     this.pad = pad
   },
   UpdateTimes() {
-    // 页面不在栈顶时跳过计算（防止 onHide 未触发时后台页持续空转）
-    if (global.currentPageName && global.currentPageName != PAGE_NAME) {
-      return
-    }
     const now = new Date()
     const localOffsetMinutes = -now.getTimezoneOffset()
     const localDateKey = this.DateKey(now)

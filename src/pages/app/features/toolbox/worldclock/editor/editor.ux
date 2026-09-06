@@ -18,8 +18,10 @@
             <text class="city-name">{{ $item.label }}</text>
             <text class="city-sub">{{ $item.sub }}</text>
           </div>
-          <text class="city-offset">{{ $item.offsetLabel }}</text>
           <text class="city-check">{{ $item.selected ? '✓' : '' }}</text>
+        </div>
+        <div class="load-more" if="{{hiddenCount > 0}}" onclick="LoadMore">
+          <text class="load-more-text">{{ $t("worldclock.loadMore") }} ({{ hiddenCount }}) </text>
         </div>
       </div>
       <text style="height: 30px"></text>
@@ -33,6 +35,8 @@ import { storage } from "@src/tsimports"
 import { WORLD_COUNTRIES, DEFAULT_SELECTION, OffsetLabel } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
+// 手表内存有限：列表分页渲染，避免一次性创建近千个节点
+const PAGE_SIZE = 30
 
 export default {
   private: {
@@ -42,6 +46,7 @@ export default {
     showInput: false,
     selectedKeys: [],
     visibleRows: [],
+    hiddenCount: 0,
     WORLD_TOTAL: WORLD_COUNTRIES.length
   },
   onInit() {
@@ -95,9 +100,13 @@ export default {
     this.queryText = ""
     this.RebuildRows()
   },
-  RebuildRows() {
+  RebuildRows(keepWindow) {
     const useEnglish = this.$t("worldclock.langCode") == "en"
     const query = this.queryText.toLowerCase()
+    const selectedSet = {}
+    for (const key of this.selectedKeys) {
+      selectedSet[key] = true
+    }
     const rows = WORLD_COUNTRIES.filter(country => {
       if (!query) {
         return true
@@ -109,9 +118,8 @@ export default {
     }).map(country => ({
       key: country.key,
       label: useEnglish ? country.en : country.zh,
-      sub: useEnglish ? country.zh : country.en,
-      offsetLabel: OffsetLabel(country.offsetMinutes),
-      selected: this.selectedKeys.indexOf(country.key) >= 0
+      sub: (useEnglish ? country.zh : country.en) + " · " + OffsetLabel(country.offsetMinutes),
+      selected: selectedSet[country.key] === true
     }))
     rows.sort((a, b) => {
       if (a.selected != b.selected) {
@@ -119,12 +127,26 @@ export default {
       }
       return 0
     })
-    this.visibleRows = rows
+    // 完整结果留在普通属性上（不进可观察数据），页面只渲染前 renderLimit 行
+    this.filteredRows = rows
+    if (!keepWindow) {
+      this.renderLimit = PAGE_SIZE
+    }
+    this.ApplyRenderWindow()
+  },
+  ApplyRenderWindow() {
+    const rows = this.filteredRows || []
+    this.visibleRows = rows.slice(0, this.renderLimit)
+    this.hiddenCount = Math.max(0, rows.length - this.renderLimit)
+  },
+  LoadMore() {
+    this.renderLimit = this.renderLimit + PAGE_SIZE
+    this.ApplyRenderWindow()
   },
   ToggleCity(item) {
     const index = this.selectedKeys.indexOf(item.key)
     if (index >= 0) {
-      // 至少保留一个城市
+      // 至少保留一个国家
       if (this.selectedKeys.length == 1) {
         return
       }
@@ -133,7 +155,8 @@ export default {
       this.selectedKeys = this.selectedKeys.concat([item.key])
     }
     this.SaveSelection()
-    this.RebuildRows()
+    // 勾选后保留当前滚动窗口，避免列表折叠回第一页
+    this.RebuildRows(true)
   }
 }
 </script>

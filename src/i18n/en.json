@@ -37,7 +37,8 @@
         "langCode": "en",
         "searchPlaceholder": "Search countries",
         "selected": "Selected",
-        "noMatch": "No matching cities"
+        "noMatch": "No matching countries",
+        "loadMore": "Load more"
     },
     "notes": {
         "title": "Notes",

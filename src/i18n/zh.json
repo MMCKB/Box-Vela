@@ -37,7 +37,8 @@
         "langCode": "zh",
         "searchPlaceholder": "搜索国家名",
         "selected": "已选",
-        "noMatch": "没有匹配的城市"
+        "noMatch": "没有匹配的国家",
+        "loadMore": "加载更多"
     },
     "notes": {
         "title": "便签",

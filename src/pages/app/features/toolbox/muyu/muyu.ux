@@ -1,43 +1,21 @@
-<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
-
 <template>
   <div class="page">
-    <div class="scroll muyu-shell {{scrclass}}">
-    <title-bar title="muyu.title"></title-bar>
-    <div class="muyu-content">
-      <text class="muyu-merit">{{ muyuTotal }}</text>
-      <text class="muyu-merit-label">{{ $t("muyu.total") }}</text>
-
-
-      <div class="muyu-tap-area" onclick="Strike">
-        <image class="muyu-img {{struck ? 'muyu-img-struck' : ''}}" src="/common/images/muyu.png"></image>
-        <text class="muyu-float {{ $item.cls }}" for="{{floatItems}}" tid="id">{{ $item.text }}</text>
+    <text class="muyu-clock">{{ currentTime }}</text>
+    <text class="muyu-num">{{ num }}</text>
+    <text class="muyu-tip" style="opacity: {{ tipOpacity }};">{{ tipText }}</text>
+    <image class="muyu-img" src="/common/images/muyu.png" onclick="handleClick"></image>
+    <image class="muyu-stele" src="/common/images/fishsd.png"></image>
+    <scroll class="wish-strip" scroll-x="true" bounces="false">
+      <div class="wish-inner">
+        <div class="wish-chip {{wishIndex == 0 ? 'wish-chip-selected' : ''}}" onclick="SetWish(0)"><text class="wish-chip-text">{{ $t("muyu.wish_0") }}</text></div>
+        <div class="wish-chip {{wishIndex == 1 ? 'wish-chip-selected' : ''}}" onclick="SetWish(1)"><text class="wish-chip-text">{{ $t("muyu.wish_1") }}</text></div>
+        <div class="wish-chip {{wishIndex == 2 ? 'wish-chip-selected' : ''}}" onclick="SetWish(2)"><text class="wish-chip-text">{{ $t("muyu.wish_2") }}</text></div>
+        <div class="wish-chip {{wishIndex == 3 ? 'wish-chip-selected' : ''}}" onclick="SetWish(3)"><text class="wish-chip-text">{{ $t("muyu.wish_3") }}</text></div>
+        <div class="wish-chip {{wishIndex == 4 ? 'wish-chip-selected' : ''}}" onclick="SetWish(4)"><text class="wish-chip-text">{{ $t("muyu.wish_4") }}</text></div>
+        <div class="wish-chip {{wishIndex == 5 ? 'wish-chip-selected' : ''}}" onclick="SetWish(5)"><text class="wish-chip-text">{{ $t("muyu.wish_5") }}</text></div>
+        <div class="wish-chip {{wishIndex == 6 ? 'wish-chip-selected' : ''}}" onclick="SetWish(6)"><text class="wish-chip-text">{{ $t("muyu.wish_6") }}</text></div>
       </div>
-
-      <text class="muyu-session">{{ $t("muyu.session") }} {{ muyuCount }}</text>
-
-      <scroll class="wish-strip" scroll-x="true" bounces="false">
-        <div class="wish-inner">
-          <div class="wish-chip {{wishIndex == 0 ? 'wish-chip-selected' : ''}}" onclick="SetWish(0)"><text class="wish-chip-text">{{ $t("muyu.wish_0") }}</text></div>
-          <div class="wish-chip {{wishIndex == 1 ? 'wish-chip-selected' : ''}}" onclick="SetWish(1)"><text class="wish-chip-text">{{ $t("muyu.wish_1") }}</text></div>
-          <div class="wish-chip {{wishIndex == 2 ? 'wish-chip-selected' : ''}}" onclick="SetWish(2)"><text class="wish-chip-text">{{ $t("muyu.wish_2") }}</text></div>
-          <div class="wish-chip {{wishIndex == 3 ? 'wish-chip-selected' : ''}}" onclick="SetWish(3)"><text class="wish-chip-text">{{ $t("muyu.wish_3") }}</text></div>
-          <div class="wish-chip {{wishIndex == 4 ? 'wish-chip-selected' : ''}}" onclick="SetWish(4)"><text class="wish-chip-text">{{ $t("muyu.wish_4") }}</text></div>
-          <div class="wish-chip {{wishIndex == 5 ? 'wish-chip-selected' : ''}}" onclick="SetWish(5)"><text class="wish-chip-text">{{ $t("muyu.wish_5") }}</text></div>
-          <div class="wish-chip {{wishIndex == 6 ? 'wish-chip-selected' : ''}}" onclick="SetWish(6)"><text class="wish-chip-text">{{ $t("muyu.wish_6") }}</text></div>
-        </div>
-      </scroll>
-
-      <div class="muyu-controls">
-        <div class="auto-btn {{autoRunning ? 'auto-btn-on' : ''}}" onclick="AutoToggle">
-          <text class="auto-btn-text">{{ autoRunning ? $t("muyu.autoOn") : $t("muyu.autoOff") }}</text>
-        </div>
-        <div class="muyu-reset {{resetState == 'confirm' ? 'muyu-reset-confirm' : ''}}" onclick="ResetTotal">
-          <text class="muyu-reset-text">{{ resetState == 'confirm' ? $t("muyu.resetConfirm") : $t("muyu.reset") }}</text>
-        </div>
-      </div>
-    </div>
-    </div>
+    </scroll>
   </div>
 </template>
 
@@ -45,38 +23,96 @@
 import vibrator from "@system.vibrator"
 import { storage } from "@src/tsimports"
 
-const MUYU_TOTAL_KEY = "muyu_total"
-const MUYU_WISH_KEY = "muyu_wish"
+const MERIT_KEY = "muyu_merit"
+const OLD_TOTAL_KEY = "muyu_total"
+const WISH_KEY = "muyu_wish"
 const WISH_COUNT = 7
-const FLOAT_MS = 850
-const AUTO_INTERVAL = 50
-const PERSIST_MS = 1500
 
 export default {
   private: {
-    scrclass: "",
-    muyuCount: 0,
-    muyuTotal: 0,
-    struck: false,
-    floatItems: [],
-    wishIndex: 0,
-    autoRunning: false,
-    resetState: ""
+    currentTime: "00:00",
+    num: 0,
+    tipText: "",
+    tipOpacity: 0,
+    wishIndex: 0
   },
   onInit() {
     global.ui.InitPage(this)
+    this.loadMerit()
+    this.loadWish()
+    this.UpdateClock()
+    this.clockTimer = setInterval(() => {
+      this.UpdateClock()
+    }, 1000)
+  },
+  onDestroy() {
+    if (this.clockTimer) {
+      clearInterval(this.clockTimer)
+    }
+    if (this.tipTimer) {
+      clearTimeout(this.tipTimer)
+    }
+  },
+  UpdateClock() {
+    const now = new Date()
+    const pad = value => (value < 10 ? "0" + value : String(value))
+    this.currentTime = pad(now.getHours()) + ":" + pad(now.getMinutes())
+  },
+  WishLabel() {
+    const useEnglish = this.$t("worldclock.langCode") == "en"
+    const zhNames = ["功德", "暴富", "上岸", "脱单", "健康", "平安", "好运"]
+    const key = "muyu.wish_" + this.wishIndex
+    return useEnglish ? this.$t(key) : zhNames[this.wishIndex]
+  },
+  handleClick() {
+    this.num = this.num + 1
+    this.saveMerit()
+    try {
+      vibrator.vibrate({ mode: "short" })
+    } catch (e) {}
+    this.tipText = this.WishLabel() + "+1"
+    this.tipOpacity = 1
+    if (this.tipTimer) {
+      clearTimeout(this.tipTimer)
+    }
+    this.tipTimer = setTimeout(() => {
+      this.tipOpacity = 0
+    }, 800)
+  },
+  loadMerit() {
     storage.get({
-      key: MUYU_TOTAL_KEY,
-      success: data => {
-        const parsed = parseInt(data)
-        if (!isNaN(parsed)) {
-          this.muyuTotal = parsed
+      key: MERIT_KEY,
+      success: res => {
+        const parsed = parseInt(res || "0")
+        if (!isNaN(parsed) && parsed > 0) {
+          this.num = parsed
+          return
         }
+        // 迁移旧计数
+        storage.get({
+          key: OLD_TOTAL_KEY,
+          success: old => {
+            const oldNum = parseInt(old || "0")
+            if (!isNaN(oldNum) && oldNum > 0) {
+              this.num = oldNum
+              this.saveMerit()
+            }
+          },
+          fail: () => {}
+        })
       },
       fail: () => {}
     })
+  },
+  saveMerit() {
+    storage.set({
+      key: MERIT_KEY,
+      value: String(this.num)
+    })
+  },
+  loadWish() {
     storage.get({
-      key: MUYU_WISH_KEY,
+      key: WISH_KEY,
       success: data => {
         const parsed = parseInt(data)
         if (!isNaN(parsed) && parsed >= 0 && parsed < WISH_COUNT) {
@@ -86,117 +122,11 @@ export default {
       fail: () => {}
     })
   },
-  onHide() {
-    this.StopAuto()
-  },
-  onDestroy() {
-    this.StopAuto()
-    if (this.strikeTimer) {
-      clearTimeout(this.strikeTimer)
-    }
-    const floatTimers = this.floatTimerIds || []
-    for (let i = 0; i < floatTimers.length; i++) {
-      clearTimeout(floatTimers[i])
-    }
-    if (this.resetTimer) {
-      clearTimeout(this.resetTimer)
-    }
-  },
-  WishLabel() {
-    const useEnglish = this.$t("worldclock.langCode") == "en"
-    const zhNames = ["功德", "暴富", "上岸", "脱单", "健康", "平安", "好运"]
-    const key = "muyu.wish_" + this.wishIndex
-    return useEnglish ? this.$t(key) : zhNames[this.wishIndex]
-  },
-  Strike(fromAuto) {
-    const now = Date.now()
-    if (!fromAuto && now - (this.lastStrikeAt || 0) < 60) {
-      return
-    }
-    this.lastStrikeAt = now
-    this.muyuCount = this.muyuCount + 1
-    this.muyuTotal = this.muyuTotal + 1
-    if (!fromAuto || now - (this.lastPersistAt || 0) > PERSIST_MS) {
-      this.lastPersistAt = now
-      this.PersistTotal()
-    }
-    try {
-      vibrator.vibrate({ mode: "short" })
-    } catch (e) {}
-    this.struck = true
-    if (this.strikeTimer) {
-      clearTimeout(this.strikeTimer)
-    }
-    this.strikeTimer = setTimeout(() => {
-      this.struck = false
-    }, 90)
-    this.ShowFloat()
-  },
-  ShowFloat() {
-    const id = ++this.floatSeq
-    const slot = Math.floor(Math.random() * 6)
-    const item = {
-      id: id,
-      text: this.WishLabel() + "+1",
-      cls: "muyu-float-pos" + slot
-    }
-    this.floatItems = this.floatItems.concat([item])
-    const tid = setTimeout(() => {
-      this.floatItems = this.floatItems.filter(it => it.id != id)
-      this.floatTimerIds = this.floatTimerIds.filter(t => t != tid)
-    }, FLOAT_MS)
-    this.floatTimerIds.push(tid)
-  },
-  PersistTotal() {
-    storage.set({
-      key: MUYU_TOTAL_KEY,
-      value: String(this.muyuTotal)
-    })
-  },
   SetWish(index) {
     this.wishIndex = index
     storage.set({
-      key: MUYU_WISH_KEY,
+      key: WISH_KEY,
       value: String(index)
-    })
-  },
-  AutoToggle() {
-    if (this.autoRunning) {
-      this.StopAuto()
-      return
-    }
-    this.autoRunning = true
-    this.autoTimer = setInterval(() => {
-      this.Strike(true)
-    }, AUTO_INTERVAL)
-  },
-  StopAuto() {
-    if (this.autoRunning) {
-      this.PersistTotal()
-    }
-    this.autoRunning = false
-    if (this.autoTimer) {
-      clearInterval(this.autoTimer)
-      this.autoTimer = null
-    }
-  },
-  ResetTotal() {
-    if (this.resetState != "confirm") {
-      this.resetState = "confirm"
-      this.resetTimer = setTimeout(() => {
-        this.resetState = ""
-      }, 3000)
-      return
-    }
-    if (this.resetTimer) {
-      clearTimeout(this.resetTimer)
-    }
-    this.resetState = ""
-    this.muyuTotal = 0
-    this.muyuCount = 0
-    storage.set({
-      key: MUYU_TOTAL_KEY,
-      value: "0"
     })
   }
 }

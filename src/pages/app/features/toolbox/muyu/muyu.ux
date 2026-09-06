@@ -11,7 +11,7 @@
 
       <div class="muyu-tap-area" onclick="Strike">
         <image class="muyu-img {{struck ? 'muyu-img-struck' : ''}}" src="/common/images/muyu.png"></image>
-        <text class="muyu-float" for="{{floatItems}}" style="position: absolute; left: {{ .left }}px; top: {{ .top }}px;">{{ .text }}</text>
+        <text class="muyu-float {{ $item.cls }}" for="{{floatItems}}" tid="id">{{ $item.text }}</text>
       </div>
 
       <text class="muyu-session">{{ $t("muyu.session") }} {{ muyuCount }}</text>
@@ -134,11 +134,11 @@ export default {
   },
   ShowFloat() {
     const id = ++this.floatSeq
+    const slot = Math.floor(Math.random() * 6)
     const item = {
       id: id,
       text: this.WishLabel() + " +1",
-      left: 120 + Math.floor(Math.random() * 180),
-      top: 40
+      cls: "muyu-float-pos" + slot
     }
     this.floatItems = this.floatItems.concat([item])
     const tid = setTimeout(() => {

@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll random-shell {{scrclass}}">
     <title-bar title="random.title"></title-bar>
     <div class="random-content">
       <div class="mode-row">
@@ -28,6 +29,7 @@
 
       <text class="roll-hint">{{ $t("random.hint") }}</text>
     </div>
+  </div>
   </div>
 </template>
 

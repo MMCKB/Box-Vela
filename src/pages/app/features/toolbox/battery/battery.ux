@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll battery-shell {{scrclass}}">
     <title-bar title="battery.title"></title-bar>
     <div class="battery-content">
       <div class="battery-card">
@@ -16,6 +17,7 @@
         <div class="info-row"><text class="info-label">{{ $t("battery.serial") }}</text><text class="info-value">{{ serialText }}</text></div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 

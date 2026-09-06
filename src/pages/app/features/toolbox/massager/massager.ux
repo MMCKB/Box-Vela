@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll massager-shell {{scrclass}}">
     <title-bar title="massager.title"></title-bar>
     <div class="massager-content">
       <div class="pattern-rows">
@@ -19,6 +20,7 @@
       </div>
       <text class="massager-hint">{{ $t("massager.hint") }}</text>
     </div>
+  </div>
   </div>
 </template>
 

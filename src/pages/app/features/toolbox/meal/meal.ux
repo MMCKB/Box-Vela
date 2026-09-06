@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll meal-shell {{scrclass}}">
     <title-bar title="meal.title"></title-bar>
     <div class="meal-content">
       <div class="meal-tabs">
@@ -16,6 +17,7 @@
       </div>
       <div class="again-btn" onclick="PickOne"><text class="again-btn-text">{{ $t("meal.again") }}</text></div>
     </div>
+  </div>
   </div>
 </template>
 

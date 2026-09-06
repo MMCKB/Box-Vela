@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll editor-shell {{scrclass}}">
     <title-bar title="worldclock.editCities"></title-bar>
     <scroll class="region-strip" scroll-x="true" bounces="false">
       <div class="region-inner">
@@ -30,6 +31,7 @@
         </div>
       </list-item>
     </list>
+  </div>
   </div>
 </template>
 

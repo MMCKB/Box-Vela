@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll worldclock-shell {{scrclass}}">
     <title-bar title="worldclock.title"></title-bar>
     <text class="worldclock-empty" if="{{cityRows.length == 0}}">{{ $t("worldclock.empty") }}</text>
     <list class="worldclock-list {{scrclass}}" bounces="false">
@@ -19,6 +20,7 @@
         <div class="worldclock-edit" onclick="OpenEditor"><text class="worldclock-edit-text">{{ $t("worldclock.editCities") }}</text></div>
       </list-item>
     </list>
+  </div>
   </div>
 </template>
 

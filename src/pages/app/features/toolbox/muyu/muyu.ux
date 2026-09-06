@@ -2,6 +2,7 @@
 
 <template>
   <div class="page">
+    <div class="scroll muyu-shell {{scrclass}}">
     <title-bar title="muyu.title"></title-bar>
     <div class="muyu-content">
       <text class="muyu-merit">{{ muyuCount }}</text>
@@ -19,6 +20,7 @@
         <text class="muyu-reset-text">{{ resetState == 'confirm' ? $t("muyu.resetConfirm") : $t("muyu.reset") }}</text>
       </div>
     </div>
+  </div>
   </div>
 </template>
 

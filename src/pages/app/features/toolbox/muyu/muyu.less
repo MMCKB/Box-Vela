@@ -18,47 +18,24 @@
 }
 
 .muyu-float {
-  width: 432px;
-  height: 64px;
+  position: absolute;
   color: #FFD34E;
   font-size: 30px;
   font-weight: 600;
-  text-align: center;
+  animation: muyuFloatUp 0.85s ease-out forwards;
 }
 
-.muyu-float-a {
-  animation: muyuFloatA 0.85s ease-out forwards;
-}
-
-.muyu-float-b {
-  animation: muyuFloatB 0.85s ease-out forwards;
-}
-
-@keyframes muyuFloatA {
+@keyframes muyuFloatUp {
   0% {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(14px);
   }
-  18% {
+  15% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translateY(-44px);
-  }
-}
-
-@keyframes muyuFloatB {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  18% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-44px);
+    transform: translateY(-96px);
   }
 }
 

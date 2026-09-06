@@ -8,10 +8,10 @@
       <text class="muyu-merit">{{ muyuTotal }}</text>
       <text class="muyu-merit-label">{{ $t("muyu.total") }}</text>
 
-      <text class="muyu-float {{floatAlt ? 'muyu-float-b' : 'muyu-float-a'}}" if="{{floatText}}">{{ floatText }}</text>
 
       <div class="muyu-tap-area" onclick="Strike">
         <image class="muyu-img {{struck ? 'muyu-img-struck' : ''}}" src="/common/images/muyu.png"></image>
+        <text class="muyu-float" for="{{floatItems}}" style="position: absolute; left: {{ .left }}px; top: {{ .top }}px;">{{ .text }}</text>
       </div>
 
       <text class="muyu-session">{{ $t("muyu.session") }} {{ muyuCount }}</text>
@@ -49,7 +49,8 @@ const MUYU_TOTAL_KEY = "muyu_total"
 const MUYU_WISH_KEY = "muyu_wish"
 const WISH_COUNT = 7
 const FLOAT_MS = 850
-const AUTO_INTERVAL = 600
+const AUTO_INTERVAL = 50
+const PERSIST_MS = 1500
 
 export default {
   private: {
@@ -57,8 +58,7 @@ export default {
     muyuCount: 0,
     muyuTotal: 0,
     struck: false,
-    floatAlt: false,
-    floatText: "",
+    floatItems: [],
     wishIndex: 0,
     autoRunning: false,
     resetState: ""
@@ -94,8 +94,9 @@ export default {
     if (this.strikeTimer) {
       clearTimeout(this.strikeTimer)
     }
-    if (this.floatTimer) {
-      clearTimeout(this.floatTimer)
+    const floatTimers = this.floatTimerIds || []
+    for (let i = 0; i < floatTimers.length; i++) {
+      clearTimeout(floatTimers[i])
     }
     if (this.resetTimer) {
       clearTimeout(this.resetTimer)
@@ -107,18 +108,18 @@ export default {
     const key = "muyu.wish_" + this.wishIndex
     return useEnglish ? this.$t(key) : zhNames[this.wishIndex]
   },
-  Strike() {
+  Strike(fromAuto) {
     const now = Date.now()
-    if (now - (this.lastStrikeAt || 0) < 80) {
+    if (!fromAuto && now - (this.lastStrikeAt || 0) < 60) {
       return
     }
     this.lastStrikeAt = now
     this.muyuCount = this.muyuCount + 1
     this.muyuTotal = this.muyuTotal + 1
-    storage.set({
-      key: MUYU_TOTAL_KEY,
-      value: String(this.muyuTotal)
-    })
+    if (now - (this.lastPersistAt || 0) > PERSIST_MS) {
+      this.lastPersistAt = now
+      this.PersistTotal()
+    }
     try {
       vibrator.vibrate({ mode: "short" })
     } catch (e) {}
@@ -132,14 +133,25 @@ export default {
     this.ShowFloat()
   },
   ShowFloat() {
-    this.floatText = this.WishLabel() + " +1"
-    this.floatAlt = !this.floatAlt
-    if (this.floatTimer) {
-      clearTimeout(this.floatTimer)
+    const id = ++this.floatSeq
+    const item = {
+      id: id,
+      text: this.WishLabel() + " +1",
+      left: 120 + Math.floor(Math.random() * 180),
+      top: 40
     }
-    this.floatTimer = setTimeout(() => {
-      this.floatText = ""
+    this.floatItems = this.floatItems.concat([item])
+    const tid = setTimeout(() => {
+      this.floatItems = this.floatItems.filter(it => it.id != id)
+      this.floatTimerIds = this.floatTimerIds.filter(t => t != tid)
     }, FLOAT_MS)
+    this.floatTimerIds.push(tid)
+  },
+  PersistTotal() {
+    storage.set({
+      key: MUYU_TOTAL_KEY,
+      value: String(this.muyuTotal)
+    })
   },
   SetWish(index) {
     this.wishIndex = index
@@ -155,10 +167,13 @@ export default {
     }
     this.autoRunning = true
     this.autoTimer = setInterval(() => {
-      this.Strike()
+      this.Strike(true)
     }, AUTO_INTERVAL)
   },
   StopAuto() {
+    if (this.autoRunning) {
+      this.PersistTotal()
+    }
     this.autoRunning = false
     if (this.autoTimer) {
       clearInterval(this.autoTimer)

@@ -2,35 +2,34 @@
 
 <template>
   <div class="page">
-    <scroll class="editor-scroll {{scrclass}}" scroll-y="true" bounces="false">
-      <title-bar title="worldclock.editCities"></title-bar>
-      <div class="editor-content">
-        <scroll class="region-strip" scroll-x="true" bounces="false">
-          <div class="region-inner">
-            <div class="region-chip {{activeRegion == 'all' ? 'region-chip-selected' : ''}}" onclick="SetRegion('all')"><text class="region-chip-text">{{ $t("worldclock.regionAll") }}</text></div>
-            <div class="region-chip {{activeRegion == 'asia' ? 'region-chip-selected' : ''}}" onclick="SetRegion('asia')"><text class="region-chip-text">{{ $t("worldclock.regionAsia") }}</text></div>
-            <div class="region-chip {{activeRegion == 'europe' ? 'region-chip-selected' : ''}}" onclick="SetRegion('europe')"><text class="region-chip-text">{{ $t("worldclock.regionEurope") }}</text></div>
-            <div class="region-chip {{activeRegion == 'africa' ? 'region-chip-selected' : ''}}" onclick="SetRegion('africa')"><text class="region-chip-text">{{ $t("worldclock.regionAfrica") }}</text></div>
-            <div class="region-chip {{activeRegion == 'namerica' ? 'region-chip-selected' : ''}}" onclick="SetRegion('namerica')"><text class="region-chip-text">{{ $t("worldclock.regionNAmerica") }}</text></div>
-            <div class="region-chip {{activeRegion == 'samerica' ? 'region-chip-selected' : ''}}" onclick="SetRegion('samerica')"><text class="region-chip-text">{{ $t("worldclock.regionSAmerica") }}</text></div>
-            <div class="region-chip {{activeRegion == 'oceania' ? 'region-chip-selected' : ''}}" onclick="SetRegion('oceania')"><text class="region-chip-text">{{ $t("worldclock.regionOceania") }}</text></div>
-          </div>
-        </scroll>
-        <text class="selected-count">{{ $t("worldclock.selected") }} {{ selectedKeys.length }} / {{ WORLD_TOTAL }}</text>
-        <text class="editor-empty" if="{{visibleRows.length == 0}}">{{ $t("worldclock.noMatch") }}</text>
-        <div class="city-row {{ $item.selected ? 'city-row-selected' : '' }}" for="{{visibleRows}}" onclick="ToggleCity($item)">
-          <div class="city-copy">
-            <text class="city-name">{{ $item.label }}</text>
-            <text class="city-sub">{{ $item.sub }}</text>
-          </div>
-          <text class="city-check">{{ $item.selected ? '✓' : '' }}</text>
+    <title-bar title="worldclock.editCities"></title-bar>
+    <scroll class="region-strip" scroll-x="true" bounces="false">
+      <div class="region-inner">
+        <div class="region-chip {{activeRegion == 'all' ? 'region-chip-selected' : ''}}" onclick="SetRegion('all')"><text class="region-chip-text">{{ $t("worldclock.regionAll") }}</text></div>
+        <div class="region-chip {{activeRegion == 'asia' ? 'region-chip-selected' : ''}}" onclick="SetRegion('asia')"><text class="region-chip-text">{{ $t("worldclock.regionAsia") }}</text></div>
+        <div class="region-chip {{activeRegion == 'europe' ? 'region-chip-selected' : ''}}" onclick="SetRegion('europe')"><text class="region-chip-text">{{ $t("worldclock.regionEurope") }}</text></div>
+        <div class="region-chip {{activeRegion == 'africa' ? 'region-chip-selected' : ''}}" onclick="SetRegion('africa')"><text class="region-chip-text">{{ $t("worldclock.regionAfrica") }}</text></div>
+        <div class="region-chip {{activeRegion == 'namerica' ? 'region-chip-selected' : ''}}" onclick="SetRegion('namerica')"><text class="region-chip-text">{{ $t("worldclock.regionNAmerica") }}</text></div>
+        <div class="region-chip {{activeRegion == 'samerica' ? 'region-chip-selected' : ''}}" onclick="SetRegion('samerica')"><text class="region-chip-text">{{ $t("worldclock.regionSAmerica") }}</text></div>
+        <div class="region-chip {{activeRegion == 'oceania' ? 'region-chip-selected' : ''}}" onclick="SetRegion('oceania')"><text class="region-chip-text">{{ $t("worldclock.regionOceania") }}</text></div>
+      </div>
+    </scroll>
+    <text class="selected-count">{{ $t("worldclock.selected") }} {{ selectedKeys.length }} / {{ WORLD_TOTAL }}</text>
+    <text class="editor-empty" if="{{visibleRows.length == 0}}">{{ $t("worldclock.noMatch") }}</text>
+    <list class="editor-list {{scrclass}}" bounces="false">
+      <list-item type="country" class="city-row {{ $item.selected ? 'city-row-selected' : '' }}" for="{{visibleRows}}" onclick="ToggleCity($item)">
+        <div class="city-copy">
+          <text class="city-name">{{ $item.label }}</text>
+          <text class="city-sub">{{ $item.sub }}</text>
         </div>
-        <div class="load-more" if="{{hiddenCount > 0}}" onclick="LoadMore">
+        <text class="city-check">{{ $item.selected ? '✓' : '' }}</text>
+      </list-item>
+      <list-item type="loadMore" class="editor-footer" if="{{hiddenCount > 0}}">
+        <div class="load-more" onclick="LoadMore">
           <text class="load-more-text">{{ $t("worldclock.loadMore") }} ({{ hiddenCount }}) </text>
         </div>
-      </div>
-      <text style="height: 30px"></text>
-    </scroll>
+      </list-item>
+    </list>
   </div>
 </template>
 
@@ -39,7 +38,7 @@ import { storage } from "@src/tsimports"
 import { WORLD_COUNTRIES, DEFAULT_SELECTION, OffsetLabel } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
-// 手表内存有限：列表分页渲染，避免一次性创建过多节点
+// 手表内存有限：列表分页渲染 + list 组件复用节点
 const PAGE_SIZE = 25
 
 export default {
@@ -72,6 +71,9 @@ export default {
           this.selectedKeys = DEFAULT_SELECTION
         }
         this.RebuildRows()
+        if (global.runGC) {
+          global.runGC()
+        }
       },
       fail: () => {
         this.selectedKeys = DEFAULT_SELECTION
@@ -124,6 +126,9 @@ export default {
   LoadMore() {
     this.renderLimit = this.renderLimit + PAGE_SIZE
     this.ApplyRenderWindow()
+    if (global.runGC) {
+      global.runGC()
+    }
   },
   ToggleCity(item) {
     const index = this.selectedKeys.indexOf(item.key)

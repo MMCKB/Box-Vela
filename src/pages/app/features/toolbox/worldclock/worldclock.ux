@@ -2,24 +2,23 @@
 
 <template>
   <div class="page">
-    <scroll class="scroll {{scrclass}}" scroll-y="true" bounces="false">
-      <title-bar title="worldclock.title"></title-bar>
-      <div class="worldclock-content">
-        <text class="worldclock-empty" if="{{cityRows.length == 0}}">{{ $t("worldclock.empty") }}</text>
-        <div class="worldclock-row" for="{{cityRows}}">
-          <div class="worldclock-copy">
-            <text class="worldclock-city">{{ $item.label }}</text>
-            <text class="worldclock-badge" if="{{ $item.badge }}">{{ $item.badge }}</text>
-          </div>
-          <div class="worldclock-time-copy">
-            <text class="worldclock-time">{{ $item.time }}</text>
-            <text class="worldclock-date">{{ $item.date }}</text>
-          </div>
+    <title-bar title="worldclock.title"></title-bar>
+    <text class="worldclock-empty" if="{{cityRows.length == 0}}">{{ $t("worldclock.empty") }}</text>
+    <list class="worldclock-list {{scrclass}}" bounces="false">
+      <list-item type="country" class="worldclock-row" for="{{cityRows}}">
+        <div class="worldclock-copy">
+          <text class="worldclock-city">{{ $item.label }}</text>
+          <text class="worldclock-badge">{{ $item.badge }}</text>
         </div>
+        <div class="worldclock-time-copy">
+          <text class="worldclock-time">{{ $item.time }}</text>
+          <text class="worldclock-date">{{ $item.date }}</text>
+        </div>
+      </list-item>
+      <list-item type="editFooter" class="worldclock-footer">
         <div class="worldclock-edit" onclick="OpenEditor"><text class="worldclock-edit-text">{{ $t("worldclock.editCities") }}</text></div>
-      </div>
-      <text style="height: 30px"></text>
-    </scroll>
+      </list-item>
+    </list>
   </div>
 </template>
 
@@ -29,6 +28,7 @@ import { storage } from "@src/tsimports"
 import { WORLD_COUNTRIES, DEFAULT_SELECTION, EffectiveOffset } from "@src/worldcities.ts"
 
 const CITIES_KEY = "worldclock_selected"
+const PAGE_NAME = "pages/app/features/toolbox/worldclock"
 
 export default {
   private: {
@@ -42,11 +42,11 @@ export default {
     this.LoadSelection()
   },
   onShow() {
-    // 从编辑页返回时重新加载已选城市
+    // 从编辑页返回时重新加载已选国家
     this.LoadSelection()
     if (!this.tickTimer) {
       this.tickTimer = setInterval(() => {
-        this.RefreshTimes()
+        this.UpdateTimes()
       }, 1000)
     }
   },
@@ -78,32 +78,49 @@ export default {
         if (this.selectedKeys.length == 0) {
           this.selectedKeys = DEFAULT_SELECTION
         }
-        this.RefreshTimes()
+        this.BuildRows()
+        this.UpdateTimes()
       },
       fail: () => {
         this.selectedKeys = DEFAULT_SELECTION
-        this.RefreshTimes()
+        this.BuildRows()
+        this.UpdateTimes()
       }
     })
   },
   OpenEditor() {
     router.push({ uri: "pages/app/features/toolbox/worldclock/editor" })
   },
-  RefreshTimes() {
-    if (this.selectedKeys.length == 0) {
-      this.cityRows = []
-      return
-    }
-    const useEnglish = this.$t("worldclock.langCode") == "en"
+  // 只在选择变化时重建行数组；秒级刷新只原地改字段，避免反复开辟新内存（内存规范要求）
+  BuildRows() {
     const now = new Date()
-    const localOffsetMinutes = -now.getTimezoneOffset()
-    const localDateKey = this.DateKey(now)
+    const useEnglish = this.$t("worldclock.langCode") == "en"
     const selected = WORLD_COUNTRIES.filter(country => this.selectedKeys.indexOf(country.key) >= 0)
     selected.sort((a, b) => EffectiveOffset(b, now) - EffectiveOffset(a, now))
     const pad = value => (value < 10 ? "0" + value : String(value))
-    this.cityRows = selected.map(city => {
-      // 目标时区墙上时间 = 本地时刻 + 时区差，再用 getUTC* 读取
-      const effOffset = EffectiveOffset(country, now)
+    this.cityRows = selected.map(country => ({
+      key: country.key,
+      label: useEnglish ? country.en : country.zh,
+      badge: "",
+      time: "",
+      date: "",
+      country: country
+    }))
+    this.pad = pad
+  },
+  UpdateTimes() {
+    // 页面不在栈顶时跳过计算（防止 onHide 未触发时后台页持续空转）
+    if (global.currentPageName && global.currentPageName != PAGE_NAME) {
+      return
+    }
+    const now = new Date()
+    const localOffsetMinutes = -now.getTimezoneOffset()
+    const localDateKey = this.DateKey(now)
+    const pad = this.pad
+    const rows = this.cityRows
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i]
+      const effOffset = EffectiveOffset(row.country, now)
       const zoned = new Date(now.getTime() + (effOffset - localOffsetMinutes) * 60000)
       const zonedDateKey = this.DateKeyUTC(zoned)
       let badge = ""
@@ -114,13 +131,10 @@ export default {
       } else if (zonedDateKey < localDateKey) {
         badge = this.$t("worldclock.yesterday")
       }
-      return {
-        label: useEnglish ? country.en : country.zh,
-        badge: badge,
-        time: pad(zoned.getUTCHours()) + ":" + pad(zoned.getUTCMinutes()) + ":" + pad(zoned.getUTCSeconds()),
-        date: pad(zoned.getUTCMonth() + 1) + "-" + pad(zoned.getUTCDate())
-      }
-    })
+      row.badge = badge
+      row.time = pad(zoned.getUTCHours()) + ":" + pad(zoned.getUTCMinutes()) + ":" + pad(zoned.getUTCSeconds())
+      row.date = pad(zoned.getUTCMonth() + 1) + "-" + pad(zoned.getUTCDate())
+    }
   },
   DateKey(value) {
     return value.getFullYear() + "-" + ("0" + (value.getMonth() + 1)).slice(-2) + "-" + ("0" + value.getDate()).slice(-2)

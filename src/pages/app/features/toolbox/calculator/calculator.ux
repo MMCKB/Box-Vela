@@ -24,6 +24,15 @@
         <div class="calculator-display">
           <text class="calculator-expression">{{ calculatorExpression }}</text>
           <text class="calculator-value">{{ calculatorDisplay }}</text>
+          <div class="calculator-history-btn" onclick="OpenHistory"><text class="calculator-history-btn-text">≡</text></div>
+        </div>
+
+        <div class="fn-row">
+          <div class="calculator-fn-key" onclick="InputPercent"><text class="calculator-fn-key-text">%</text></div>
+          <div class="calculator-fn-key" onclick="ApplySqrt"><text class="calculator-fn-key-text">√</text></div>
+          <div class="calculator-fn-key" onclick="ApplySquare"><text class="calculator-fn-key-text">x²</text></div>
+          <div class="calculator-fn-key" onclick="ApplyReciprocal"><text class="calculator-fn-key-text">1/x</text></div>
+          <div class="calculator-fn-key" onclick="InputPi"><text class="calculator-fn-key-text">π</text></div>
         </div>
 
         <div class="key-row">
@@ -65,6 +74,10 @@
             <div class="converter-type {{converterType == 'speed' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('speed')"><text class="converter-type-text">{{ $t("calculator.speed") }}</text></div>
             <div class="converter-type {{converterType == 'area' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('area')"><text class="converter-type-text">{{ $t("calculator.area") }}</text></div>
             <div class="converter-type {{converterType == 'temperature' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('temperature')"><text class="converter-type-text">{{ $t("calculator.temperature") }}</text></div>
+            <div class="converter-type {{converterType == 'data' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('data')"><text class="converter-type-text">{{ $t("calculator.data") }}</text></div>
+            <div class="converter-type {{converterType == 'time' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('time')"><text class="converter-type-text">{{ $t("calculator.time") }}</text></div>
+            <div class="converter-type {{converterType == 'energy' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('energy')"><text class="converter-type-text">{{ $t("calculator.energy") }}</text></div>
+            <div class="converter-type {{converterType == 'pressure' ? 'converter-type-selected' : ''}}" onclick="SetConverterType('pressure')"><text class="converter-type-text">{{ $t("calculator.pressure") }}</text></div>
           </div>
         </scroll>
 
@@ -134,10 +147,30 @@
         </scroll>
       </div>
     </div>
+    <div if="{{historyDialogVisible}}" class="unit-dialog-mask">
+      <div class="unit-dialog">
+        <div class="unit-dialog-heading">
+          <text class="unit-dialog-title">{{ $t("calculator.historyTitle") }}</text>
+          <div class="unit-dialog-clear" onclick="ClearHistory"><text class="unit-dialog-clear-text">{{ $t("calculator.clearHistory") }}</text></div>
+          <div class="unit-dialog-close" onclick="CloseHistory"><text class="unit-dialog-close-text">×</text></div>
+        </div>
+        <scroll class="unit-dialog-list" scroll-y="true" bounces="false">
+          <text if="{{historyEntries.length == 0}}" class="unit-dialog-empty">{{ $t("calculator.historyEmpty") }}</text>
+          <div class="unit-dialog-option" for="{{historyEntries}}" onclick="PickHistory($item)">
+            <text class="unit-dialog-option-text">{{ $item.label }}</text>
+          </div>
+        </scroll>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { storage } from "../../../../../tsimports"
+
+const HISTORY_KEY = "calculator_history"
+const HISTORY_MAX = 20
+
 const CONVERTER_DEFINITIONS = {
   length: {
     labels: ["m", "km", "cm", "in", "ft"],
@@ -162,6 +195,26 @@ const CONVERTER_DEFINITIONS = {
   temperature: {
     labels: ["°C", "°F", "K"],
     symbols: ["°C", "°F", "K"]
+  },
+  data: {
+    labels: ["B", "KB", "MB", "GB"],
+    symbols: ["B", "KB", "MB", "GB"],
+    factors: [1, 1024, 1048576, 1073741824]
+  },
+  time: {
+    labels: ["s", "min", "h", "d"],
+    symbols: ["s", "min", "h", "d"],
+    factors: [1, 60, 3600, 86400]
+  },
+  energy: {
+    labels: ["J", "kJ", "cal", "kcal", "kWh"],
+    symbols: ["J", "kJ", "cal", "kcal", "kWh"],
+    factors: [1, 1000, 4.186, 4186, 3600000]
+  },
+  pressure: {
+    labels: ["Pa", "kPa", "bar", "atm", "mmHg"],
+    symbols: ["Pa", "kPa", "bar", "atm", "mmHg"],
+    factors: [1, 1000, 100000, 101325, 133.322]
   }
 }
 
@@ -184,7 +237,9 @@ export default {
     convertedValue: "0.001",
     unitDialogVisible: false,
     unitDialogTarget: "",
-    unitDialogLabels: []
+    unitDialogLabels: [],
+    historyDialogVisible: false,
+    historyEntries: []
   },
   ShowBasic() {
     this.activePanel = "basic"
@@ -196,8 +251,44 @@ export default {
     if (!isFinite(value)) {
       return "错误"
     }
+    const abs = Math.abs(value)
+    if (abs >= 1e12 || (abs > 0 && abs < 1e-6)) {
+      return value.toExponential(6).replace(/\.?0+e/, "e")
+    }
     const rounded = Math.round(value * 1000000) / 1000000
     return String(rounded)
+  },
+  ApplyUnary(transform) {
+    if (this.calculatorDisplay == "错误" || this.calculatorWaitingForOperand) {
+      return
+    }
+    const inputValue = Number(this.calculatorDisplay)
+    if (!isFinite(inputValue)) {
+      this.ClearCalculator()
+      return
+    }
+    const result = transform(inputValue)
+    if (!isFinite(result)) {
+      this.calculatorDisplay = "错误"
+      return
+    }
+    this.calculatorDisplay = this.FormatNumber(result)
+  },
+  InputPercent() {
+    this.ApplyUnary(value => value / 100)
+  },
+  ApplySqrt() {
+    this.ApplyUnary(value => value < 0 ? NaN : Math.sqrt(value))
+  },
+  ApplySquare() {
+    this.ApplyUnary(value => value * value)
+  },
+  ApplyReciprocal() {
+    this.ApplyUnary(value => value == 0 ? NaN : 1 / value)
+  },
+  InputPi() {
+    this.calculatorDisplay = this.FormatNumber(Math.PI)
+    this.calculatorWaitingForOperand = false
   },
   InputDigit(digit) {
     if (this.calculatorDisplay == "错误" || this.calculatorWaitingForOperand) {
@@ -291,12 +382,58 @@ export default {
       this.calculatorDisplay = "错误"
       this.calculatorExpression = ""
     } else {
-      this.calculatorExpression = this.FormatNumber(this.calculatorAccumulator) + " " + this.OperatorLabel(this.calculatorOperator) + " " + this.FormatNumber(rightValue) + " ="
+      const expression = this.FormatNumber(this.calculatorAccumulator) + " " + this.OperatorLabel(this.calculatorOperator) + " " + this.FormatNumber(rightValue)
+      this.calculatorExpression = expression + " ="
       this.calculatorDisplay = this.FormatNumber(result)
+      this.AddHistory({ label: expression + " = " + this.FormatNumber(result), value: this.FormatNumber(result) })
     }
     this.calculatorAccumulator = null
     this.calculatorOperator = ""
     this.calculatorWaitingForOperand = true
+  },
+  LoadHistory() {
+    storage.get({
+      key: HISTORY_KEY,
+      success: data => {
+        try {
+          const parsed = JSON.parse(data)
+          if (Array.isArray(parsed)) {
+            this.historyEntries = parsed
+          }
+        } catch (e) {
+          this.historyEntries = []
+        }
+      },
+      fail: () => {
+        this.historyEntries = []
+      }
+    })
+  },
+  AddHistory(entry) {
+    this.historyEntries = [entry].concat(this.historyEntries).slice(0, HISTORY_MAX)
+    storage.set({
+      key: HISTORY_KEY,
+      value: JSON.stringify(this.historyEntries)
+    })
+  },  OpenHistory() {
+    this.historyDialogVisible = true
+  },
+  CloseHistory() {
+    this.historyDialogVisible = false
+  },
+  PickHistory(item) {
+    this.historyDialogVisible = false
+    if (item && item.value !== undefined) {
+      this.calculatorDisplay = item.value
+      this.calculatorWaitingForOperand = false
+    }
+  },
+  ClearHistory() {
+    this.historyEntries = []
+    storage.set({
+      key: HISTORY_KEY,
+      value: "[]"
+    })
   },
   SetConverterType(type) {
     const definition = CONVERTER_DEFINITIONS[type]
@@ -390,6 +527,7 @@ export default {
   },
   onInit() {
     this.SetConverterType("length")
+    this.LoadHistory()
   }
 }
 </script>

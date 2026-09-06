@@ -170,12 +170,19 @@
         "speed": "速度",
         "area": "面积",
         "temperature": "温度",
+        "data": "数据",
+        "time": "时间",
+        "energy": "能量",
+        "pressure": "压力",
         "input": "输入",
         "from": "从",
         "to": "到",
         "result": "结果",
         "selectFrom": "选择源单位",
-        "selectTo": "选择目标单位"
+        "selectTo": "选择目标单位",
+        "historyTitle": "计算历史",
+        "historyEmpty": "暂无历史记录",
+        "clearHistory": "清空"
     },
     "game2048": {
         "title": "2048",

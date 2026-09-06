@@ -170,12 +170,19 @@
         "speed": "Speed",
         "area": "Area",
         "temperature": "Temperature",
+        "data": "Data",
+        "time": "Time",
+        "energy": "Energy",
+        "pressure": "Pressure",
         "input": "Input",
         "from": "From",
         "to": "To",
         "result": "Result",
         "selectFrom": "Select source unit",
-        "selectTo": "Select target unit"
+        "selectTo": "Select target unit",
+        "historyTitle": "History",
+        "historyEmpty": "No history yet",
+        "clearHistory": "Clear"
     },
     "game2048": {
         "title": "2048",

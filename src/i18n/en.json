@@ -35,7 +35,17 @@
         "merit": "Merit",
         "total": "Total",
         "reset": "Reset",
-        "resetConfirm": "Tap again to reset"
+        "resetConfirm": "Tap again to reset",
+        "session": "Session",
+        "autoOn": "Auto: on",
+        "autoOff": "Auto: off",
+        "wish_0": "Merit",
+        "wish_1": "Rich",
+        "wish_2": "Success",
+        "wish_3": "Love",
+        "wish_4": "Health",
+        "wish_5": "Safety",
+        "wish_6": "Luck"
     },
     "password": {
         "title": "Password Gen",

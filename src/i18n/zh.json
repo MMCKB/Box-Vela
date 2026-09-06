@@ -35,7 +35,17 @@
         "merit": "功德",
         "total": "累计",
         "reset": "清零",
-        "resetConfirm": "确认清零？"
+        "resetConfirm": "确认清零？",
+        "session": "本次",
+        "autoOn": "自动敲 开",
+        "autoOff": "自动敲 关",
+        "wish_0": "功德",
+        "wish_1": "暴富",
+        "wish_2": "上岸",
+        "wish_3": "脱单",
+        "wish_4": "健康",
+        "wish_5": "平安",
+        "wish_6": "好运"
     },
     "password": {
         "title": "密码生成器",

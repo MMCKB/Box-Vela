@@ -116,7 +116,7 @@ export default {
     this.lastStrikeAt = now
     this.muyuCount = this.muyuCount + 1
     this.muyuTotal = this.muyuTotal + 1
-    if (now - (this.lastPersistAt || 0) > PERSIST_MS) {
+    if (!fromAuto || now - (this.lastPersistAt || 0) > PERSIST_MS) {
       this.lastPersistAt = now
       this.PersistTotal()
     }
@@ -137,7 +137,7 @@ export default {
     const slot = Math.floor(Math.random() * 6)
     const item = {
       id: id,
-      text: this.WishLabel() + " +1",
+      text: this.WishLabel() + "+1",
       cls: "muyu-float-pos" + slot
     }
     this.floatItems = this.floatItems.concat([item])

@@ -14,7 +14,34 @@
         "todo": "To-do",
         "todoDescription": "Keep track of important tasks",
         "countdown": "Countdown",
-        "countdownDescription": "Remember every important day"
+        "countdownDescription": "Remember every important day",
+        "muyu": "Wooden Fish",
+        "muyuDescription": "Tap for zen merits",
+        "worldclock": "World Clock",
+        "worldclockDescription": "Current time in 10 cities"
+    },
+    "muyu": {
+        "title": "Wooden Fish",
+        "merit": "Merit",
+        "total": "Total",
+        "reset": "Reset",
+        "resetConfirm": "Tap again to reset"
+    },
+    "worldclock": {
+        "title": "World Clock",
+        "local": "Local",
+        "yesterday": "Yesterday",
+        "tomorrow": "Tomorrow",
+        "city_beijing": "Beijing",
+        "city_tokyo": "Tokyo",
+        "city_sydney": "Sydney",
+        "city_mumbai": "Mumbai",
+        "city_dubai": "Dubai",
+        "city_moscow": "Moscow",
+        "city_paris": "Paris",
+        "city_london": "London",
+        "city_newyork": "New York",
+        "city_losangeles": "Los Angeles"
     },
     "notes": {
         "title": "Notes",

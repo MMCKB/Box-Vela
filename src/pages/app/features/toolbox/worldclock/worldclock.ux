@@ -1,0 +1,106 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <scroll class="scroll {{scrclass}}" scroll-y="true" bounces="false">
+      <title-bar title="worldclock.title"></title-bar>
+      <div class="worldclock-content">
+        <div class="worldclock-row" for="{{cityRows}}">
+          <div class="worldclock-copy">
+            <text class="worldclock-city">{{ $item.label }}</text>
+            <text class="worldclock-badge" if="{{ $item.badge }}">{{ $item.badge }}</text>
+          </div>
+          <div class="worldclock-time-copy">
+            <text class="worldclock-time">{{ $item.time }}</text>
+            <text class="worldclock-date">{{ $item.date }}</text>
+          </div>
+        </div>
+      </div>
+      <text style="height: 30px"></text>
+    </scroll>
+  </div>
+</template>
+
+<script>
+const TIMEZONES = [
+  { key: "beijing", offsetMinutes: 480 },
+  { key: "tokyo", offsetMinutes: 540 },
+  { key: "sydney", offsetMinutes: 600 },
+  { key: "mumbai", offsetMinutes: 330 },
+  { key: "dubai", offsetMinutes: 240 },
+  { key: "moscow", offsetMinutes: 180 },
+  { key: "paris", offsetMinutes: 60 },
+  { key: "london", offsetMinutes: 0 },
+  { key: "newyork", offsetMinutes: -300 },
+  { key: "losangeles", offsetMinutes: -480 }
+]
+
+export default {
+  private: {
+    scrclass: "",
+    cityRows: [],
+    tickTimer: null
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    this.RefreshTimes()
+  },
+  onShow() {
+    this.RefreshTimes()
+    if (!this.tickTimer) {
+      this.tickTimer = setInterval(() => {
+        this.RefreshTimes()
+      }, 1000)
+    }
+  },
+  onHide() {
+    this.StopTimer()
+  },
+  onDestroy() {
+    this.StopTimer()
+  },
+  StopTimer() {
+    if (this.tickTimer) {
+      clearInterval(this.tickTimer)
+      this.tickTimer = null
+    }
+  },
+  RefreshTimes() {
+    const now = new Date()
+    const localOffsetMinutes = -now.getTimezoneOffset()
+    const localDateKey = this.DateKey(now)
+    const rows = TIMEZONES.map(tz => {
+      // 目标时区墙上时间 = 本地时刻 + 时区差，再用 getUTC* 读取
+      const zoned = new Date(now.getTime() + (tz.offsetMinutes - localOffsetMinutes) * 60000)
+      const zonedDateKey = this.DateKeyUTC(zoned)
+      let badge = ""
+      if (tz.offsetMinutes == localOffsetMinutes) {
+        badge = this.$t("worldclock.local")
+      } else if (zonedDateKey > localDateKey) {
+        badge = this.$t("worldclock.tomorrow")
+      } else if (zonedDateKey < localDateKey) {
+        badge = this.$t("worldclock.yesterday")
+      }
+      const pad = value => (value < 10 ? "0" + value : String(value))
+      return {
+        label: this.$t("worldclock.city_" + tz.key),
+        badge: badge,
+        time: pad(zoned.getUTCHours()) + ":" + pad(zoned.getUTCMinutes()) + ":" + pad(zoned.getUTCSeconds()),
+        date: pad(zoned.getUTCMonth() + 1) + "-" + pad(zoned.getUTCDate())
+      }
+    })
+    this.cityRows = rows
+  },
+  DateKey(value) {
+    return value.getFullYear() + "-" + ("0" + (value.getMonth() + 1)).slice(-2) + "-" + ("0" + value.getDate()).slice(-2)
+  },
+  DateKeyUTC(value) {
+    return value.getUTCFullYear() + "-" + ("0" + (value.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + value.getUTCDate()).slice(-2)
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./worldclock.less";
+</style>

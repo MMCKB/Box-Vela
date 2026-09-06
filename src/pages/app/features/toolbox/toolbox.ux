@@ -61,6 +61,22 @@
           </div>
           <text class="toolbox-card-arrow">›</text>
         </div>
+        <div class="toolbox-card toolbox-card-next" onclick="OpenMuyu">
+          <div class="toolbox-card-icon"><text class="toolbox-card-icon-text">木</text></div>
+          <div class="toolbox-card-copy">
+            <text class="toolbox-card-title">{{ $t("toolbox.muyu") }}</text>
+            <text class="toolbox-card-subtitle">{{ $t("toolbox.muyuDescription") }}</text>
+          </div>
+          <text class="toolbox-card-arrow">›</text>
+        </div>
+        <div class="toolbox-card toolbox-card-next" onclick="OpenWorldclock">
+          <div class="toolbox-card-icon"><text class="toolbox-card-icon-text">⊕</text></div>
+          <div class="toolbox-card-copy">
+            <text class="toolbox-card-title">{{ $t("toolbox.worldclock") }}</text>
+            <text class="toolbox-card-subtitle">{{ $t("toolbox.worldclockDescription") }}</text>
+          </div>
+          <text class="toolbox-card-arrow">›</text>
+        </div>
       </div>
       <text style="height: 30px"></text>
     </scroll>
@@ -106,6 +122,12 @@ export default {
     router.push({
       uri: "pages/app/features/toolbox/notes"
     })
+  },
+  OpenMuyu() {
+    router.push({ uri: "pages/app/features/toolbox/muyu" })
+  },
+  OpenWorldclock() {
+    router.push({ uri: "pages/app/features/toolbox/worldclock" })
   }
 }
 </script>

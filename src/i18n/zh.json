@@ -14,7 +14,34 @@
         "todo": "待办",
         "todoDescription": "记录今天的重要事项",
         "countdown": "倒数日",
-        "countdownDescription": "记住每一个重要日子"
+        "countdownDescription": "记住每一个重要日子",
+        "muyu": "电子木鱼",
+        "muyuDescription": "敲一敲，攒功德",
+        "worldclock": "世界时钟",
+        "worldclockDescription": "十个城市的当前时间"
+    },
+    "muyu": {
+        "title": "电子木鱼",
+        "merit": "功德",
+        "total": "累计",
+        "reset": "清零",
+        "resetConfirm": "确认清零？"
+    },
+    "worldclock": {
+        "title": "世界时钟",
+        "local": "本地",
+        "yesterday": "昨天",
+        "tomorrow": "明天",
+        "city_beijing": "北京",
+        "city_tokyo": "东京",
+        "city_sydney": "悉尼",
+        "city_mumbai": "孟买",
+        "city_dubai": "迪拜",
+        "city_moscow": "莫斯科",
+        "city_paris": "巴黎",
+        "city_london": "伦敦",
+        "city_newyork": "纽约",
+        "city_losangeles": "洛杉矶"
     },
     "notes": {
         "title": "便签",

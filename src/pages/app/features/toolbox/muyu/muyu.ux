@@ -1,0 +1,100 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <title-bar title="muyu.title"></title-bar>
+    <div class="muyu-content">
+      <text class="muyu-merit">{{ muyuCount }}</text>
+      <text class="muyu-merit-label">{{ $t("muyu.merit") }}</text>
+
+      <div class="muyu-tap-area" onclick="Strike">
+        <div class="muyu-body {{struck ? 'muyu-body-struck' : ''}}">
+          <text class="muyu-body-text">木鱼</text>
+        </div>
+      </div>
+
+      <div class="muyu-footer">
+        <text class="muyu-total-label">{{ $t("muyu.total") }}</text>
+        <text class="muyu-total-value">{{ muyuTotal }}</text>
+      </div>
+      <div class="muyu-reset {{resetState == 'confirm' ? 'muyu-reset-confirm' : ''}}" onclick="ResetTotal">
+        <text class="muyu-reset-text">{{ resetState == 'confirm' ? $t("muyu.resetConfirm") : $t("muyu.reset") }}</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import vibrator from "@system.vibrator"
+import { storage } from "@src/tsimports"
+
+const MUYU_TOTAL_KEY = "muyu_total"
+
+export default {
+  private: {
+    scrclass: "",
+    muyuCount: 0,
+    muyuTotal: 0,
+    struck: false,
+    resetState: "",
+    resetTimer: null
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    storage.get({
+      key: MUYU_TOTAL_KEY,
+      success: data => {
+        const parsed = parseInt(data)
+        if (!isNaN(parsed)) {
+          this.muyuTotal = parsed
+        }
+      },
+      fail: () => {}
+    })
+  },
+  onDestroy() {
+    if (this.resetTimer) {
+      clearTimeout(this.resetTimer)
+    }
+  },
+  Strike() {
+    this.muyuCount = this.muyuCount + 1
+    this.muyuTotal = this.muyuTotal + 1
+    storage.set({
+      key: MUYU_TOTAL_KEY,
+      value: String(this.muyuTotal)
+    })
+    try {
+      vibrator.vibrate({ mode: "short" })
+    } catch (e) {}
+    this.struck = true
+    setTimeout(() => {
+      this.struck = false
+    }, 90)
+  },
+  ResetTotal() {
+    if (this.resetState != "confirm") {
+      this.resetState = "confirm"
+      this.resetTimer = setTimeout(() => {
+        this.resetState = ""
+      }, 3000)
+      return
+    }
+    if (this.resetTimer) {
+      clearTimeout(this.resetTimer)
+    }
+    this.resetState = ""
+    this.muyuTotal = 0
+    this.muyuCount = 0
+    storage.set({
+      key: MUYU_TOTAL_KEY,
+      value: "0"
+    })
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./muyu.less";
+</style>

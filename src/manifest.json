@@ -101,6 +101,12 @@
             },
             "pages/app/features/toolbox/weather/settings": {
                 "component": "weatherconfig"
+            },
+            "pages/app/features/toolbox/muyu": {
+                "component": "muyu"
+            },
+            "pages/app/features/toolbox/worldclock": {
+                "component": "worldclock"
             }
         }
     }

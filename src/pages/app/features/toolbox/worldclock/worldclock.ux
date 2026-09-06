@@ -5,7 +5,6 @@
     <scroll class="scroll {{scrclass}}" scroll-y="true" bounces="false">
       <title-bar title="worldclock.title"></title-bar>
       <div class="worldclock-content">
-        <div class="worldclock-edit" onclick="OpenEditor"><text class="worldclock-edit-text">{{ $t("worldclock.editCities") }}</text></div>
         <text class="worldclock-empty" if="{{cityRows.length == 0}}">{{ $t("worldclock.empty") }}</text>
         <div class="worldclock-row" for="{{cityRows}}">
           <div class="worldclock-copy">
@@ -17,6 +16,7 @@
             <text class="worldclock-date">{{ $item.date }}</text>
           </div>
         </div>
+        <div class="worldclock-edit" onclick="OpenEditor"><text class="worldclock-edit-text">{{ $t("worldclock.editCities") }}</text></div>
       </div>
       <text style="height: 30px"></text>
     </scroll>
@@ -48,19 +48,27 @@ const DEFAULT_CITIES = ["beijing", "tokyo", "sydney", "mumbai", "dubai", "moscow
 const TIMEZONES = [
   { key: "auckland", offsetMinutes: 720 },
   { key: "sydney", offsetMinutes: 600 },
+  { key: "seoul", offsetMinutes: 540 },
   { key: "tokyo", offsetMinutes: 540 },
-  { key: "beijing", offsetMinutes: 480 },
   { key: "hongkong", offsetMinutes: 480 },
+  { key: "beijing", offsetMinutes: 480 },
+  { key: "manila", offsetMinutes: 480 },
   { key: "singapore", offsetMinutes: 480 },
   { key: "bangkok", offsetMinutes: 420 },
+  { key: "jakarta", offsetMinutes: 420 },
   { key: "mumbai", offsetMinutes: 330 },
   { key: "dubai", offsetMinutes: 240 },
   { key: "moscow", offsetMinutes: 180 },
   { key: "cairo", offsetMinutes: 120 },
+  { key: "berlin", offsetMinutes: 60 },
+  { key: "rome", offsetMinutes: 60 },
   { key: "paris", offsetMinutes: 60 },
   { key: "london", offsetMinutes: 0 },
+  { key: "saopaulo", offsetMinutes: -180 },
   { key: "newyork", offsetMinutes: -300 },
+  { key: "toronto", offsetMinutes: -300 },
   { key: "losangeles", offsetMinutes: -480 },
+  { key: "vancouver", offsetMinutes: -480 },
   { key: "honolulu", offsetMinutes: -600 }
 ]
 

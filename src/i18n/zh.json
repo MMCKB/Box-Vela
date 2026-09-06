@@ -28,7 +28,9 @@
         "meal": "今日饮食",
         "mealDescription": "今天吃点什么",
         "massager": "振动按摩器",
-        "massagerDescription": "四种节奏震动"
+        "massagerDescription": "四种节奏震动",
+        "viewGrid": "宫",
+        "viewList": "列"
     },
     "muyu": {
         "title": "电子木鱼",

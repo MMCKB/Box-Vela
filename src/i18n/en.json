@@ -28,7 +28,9 @@
         "meal": "What to Eat",
         "mealDescription": "Random meal ideas",
         "massager": "Vibration",
-        "massagerDescription": "Four vibration patterns"
+        "massagerDescription": "Four vibration patterns",
+        "viewGrid": "Grid",
+        "viewList": "List"
     },
     "muyu": {
         "title": "Wooden Fish",

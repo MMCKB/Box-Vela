@@ -28,9 +28,7 @@
         "meal": "What to Eat",
         "mealDescription": "Random meal ideas",
         "massager": "Vibration",
-        "massagerDescription": "Four vibration patterns",
-        "speedtest": "Speed Test",
-        "speedtestDescription": "Measure network speed"
+        "massagerDescription": "Four vibration patterns"
     },
     "muyu": {
         "title": "Wooden Fish",
@@ -97,20 +95,6 @@
         "start": "Start",
         "stop": "Stop",
         "hint": "Stops when you leave"
-    },
-    "speedtest": {
-        "title": "Speed Test",
-        "start": "Start",
-        "testing": "Testing…",
-        "mbps": "Mbps",
-        "ping": "Ping",
-        "network": "Network",
-        "phasePing": "Pinging…",
-        "phaseDownload": "Downloading…",
-        "fail": "Failed, check network",
-        "last": "Last",
-        "server": "Node",
-        "switching": "Switching…"
     },
     "worldclock": {
         "title": "World Clock",

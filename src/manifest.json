@@ -114,9 +114,6 @@
             "pages/app/features/toolbox/worldclock/editor": {
                 "component": "editor"
             },
-            "pages/app/features/toolbox/speedtest": {
-                "component": "speedtest"
-            },
             "pages/app/features/toolbox/password": {
                 "component": "password"
             },

@@ -28,9 +28,7 @@
         "meal": "今日饮食",
         "mealDescription": "今天吃点什么",
         "massager": "振动按摩器",
-        "massagerDescription": "四种节奏震动",
-        "speedtest": "网速测试",
-        "speedtestDescription": "测当前网络速度"
+        "massagerDescription": "四种节奏震动"
     },
     "muyu": {
         "title": "电子木鱼",
@@ -97,20 +95,6 @@
         "start": "开始",
         "stop": "停止",
         "hint": "离开页面自动停止"
-    },
-    "speedtest": {
-        "title": "网速测试",
-        "start": "开始测速",
-        "testing": "测速中…",
-        "mbps": "Mbps",
-        "ping": "延迟",
-        "network": "网络",
-        "phasePing": "正在测延迟…",
-        "phaseDownload": "正在测下载…",
-        "fail": "测速失败，请检查网络",
-        "last": "上次",
-        "server": "节点",
-        "switching": "切换节点…"
     },
     "worldclock": {
         "title": "世界时钟",

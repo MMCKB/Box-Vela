@@ -101,14 +101,6 @@
           </div>
           <text class="toolbox-card-arrow">›</text>
         </div>
-        <div class="toolbox-card toolbox-card-next" onclick="OpenSpeedtest">
-          <div class="toolbox-card-icon"><text class="toolbox-card-icon-text">速</text></div>
-          <div class="toolbox-card-copy">
-            <text class="toolbox-card-title">{{ $t("toolbox.speedtest") }}</text>
-            <text class="toolbox-card-subtitle">{{ $t("toolbox.speedtestDescription") }}</text>
-          </div>
-          <text class="toolbox-card-arrow">›</text>
-        </div>
         <div class="toolbox-card toolbox-card-next" onclick="OpenMeal">
           <div class="toolbox-card-icon"><text class="toolbox-card-icon-text">食</text></div>
           <div class="toolbox-card-copy">
@@ -185,9 +177,6 @@ export default {
   },
   OpenBattery() {
     router.push({ uri: "pages/app/features/toolbox/battery" })
-  },
-  OpenSpeedtest() {
-    router.push({ uri: "pages/app/features/toolbox/speedtest" })
   },
   OpenMeal() {
     router.push({ uri: "pages/app/features/toolbox/meal" })

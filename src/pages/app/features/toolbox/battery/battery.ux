@@ -1,0 +1,69 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <title-bar title="battery.title"></title-bar>
+    <div class="battery-content">
+      <div class="battery-card">
+        <text class="battery-level">{{ levelText }}</text>
+        <text class="battery-charge">{{ chargeText }}</text>
+        <div class="refresh-btn" onclick="Refresh"><text class="refresh-btn-text">{{ $t("battery.refresh") }}</text></div>
+      </div>
+      <div class="info-card">
+        <div class="info-row"><text class="info-label">{{ $t("battery.model") }}</text><text class="info-value">{{ modelText }}</text></div>
+        <div class="info-row"><text class="info-label">{{ $t("battery.system") }}</text><text class="info-value">{{ osText }}</text></div>
+        <div class="info-row"><text class="info-label">{{ $t("battery.network") }}</text><text class="info-value">{{ networkText }}</text></div>
+        <div class="info-row"><text class="info-label">{{ $t("battery.serial") }}</text><text class="info-value">{{ serialText }}</text></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import battery from "@system.battery"
+
+export default {
+  private: {
+    scrclass: "",
+    levelText: "--",
+    chargeText: "",
+    modelText: "--",
+    osText: "--",
+    networkText: "--",
+    serialText: "--"
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    this.LoadDeviceInfo()
+    this.Refresh()
+  },
+  onShow() {
+    this.Refresh()
+  },
+  LoadDeviceInfo() {
+    const info = global.DEVICE_INFO || {}
+    this.modelText = String(info.model || info.product || "--")
+    this.osText = String(info.osVersion || info.os || "--")
+    this.networkText = global.DEVICE_NETWORK_TYPE || "--"
+    this.serialText = global.DEVICE_SERIAL ? String(global.DEVICE_SERIAL) : "--"
+  },
+  Refresh() {
+    battery.getStatus({
+      success: data => {
+        const percent = Math.round((data.level || 0) * 100)
+        this.levelText = percent + "%"
+        this.chargeText = data.charging ? this.$t("battery.chargingYes") : this.$t("battery.chargingNo")
+      },
+      fail: () => {
+        this.levelText = "--"
+        this.chargeText = this.$t("battery.unknown")
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./battery.less";
+</style>

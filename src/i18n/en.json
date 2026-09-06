@@ -18,7 +18,17 @@
         "muyu": "Wooden Fish",
         "muyuDescription": "Tap for zen merits",
         "worldclock": "World Clock",
-        "worldclockDescription": "Current time in 10 cities"
+        "worldclockDescription": "Time for countries worldwide",
+        "password": "Password Gen",
+        "passwordDescription": "Custom length and charset",
+        "random": "Random Pick",
+        "randomDescription": "Dice, coin and numbers",
+        "battery": "Battery & Device",
+        "batteryDescription": "Battery and device info",
+        "meal": "What to Eat",
+        "mealDescription": "Random meal ideas",
+        "massager": "Vibration",
+        "massagerDescription": "Four vibration patterns"
     },
     "muyu": {
         "title": "Wooden Fish",
@@ -26,6 +36,55 @@
         "total": "Total",
         "reset": "Reset",
         "resetConfirm": "Tap again to reset"
+    },
+    "password": {
+        "title": "Password Gen",
+        "length": "Length",
+        "upper": "A-Z",
+        "lower": "a-z",
+        "digit": "0-9",
+        "symbol": "Sym",
+        "regenerate": "Regenerate"
+    },
+    "random": {
+        "title": "Random Pick",
+        "dice": "Dice",
+        "coin": "Coin",
+        "number": "Number",
+        "min": "Min",
+        "max": "Max",
+        "coinHeads": "Heads",
+        "coinTails": "Tails",
+        "hint": "Tap result to roll"
+    },
+    "battery": {
+        "title": "Battery & Device",
+        "refresh": "Refresh",
+        "chargingYes": "Charging",
+        "chargingNo": "On battery",
+        "unknown": "Unavailable",
+        "model": "Model",
+        "system": "System",
+        "network": "Network",
+        "serial": "Serial"
+    },
+    "meal": {
+        "title": "What to Eat",
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "dinner": "Dinner",
+        "suggest": "Try",
+        "again": "Again"
+    },
+    "massager": {
+        "title": "Vibration",
+        "patternShort": "Short",
+        "patternLong": "Long",
+        "patternHeart": "Heartbeat",
+        "patternWave": "Wave",
+        "start": "Start",
+        "stop": "Stop",
+        "hint": "Stops when you leave"
     },
     "worldclock": {
         "title": "World Clock",

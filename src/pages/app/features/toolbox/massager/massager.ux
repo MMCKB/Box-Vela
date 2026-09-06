@@ -1,0 +1,102 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <title-bar title="massager.title"></title-bar>
+    <div class="massager-content">
+      <div class="pattern-rows">
+        <div class="pattern-row">
+          <div class="pattern-chip {{activePattern == 'short' ? 'pattern-chip-selected' : ''}}" onclick="SetPattern('short')"><text class="pattern-chip-text">{{ $t("massager.patternShort") }}</text></div>
+          <div class="pattern-chip {{activePattern == 'long' ? 'pattern-chip-selected' : ''}}" onclick="SetPattern('long')"><text class="pattern-chip-text">{{ $t("massager.patternLong") }}</text></div>
+        </div>
+        <div class="pattern-row">
+          <div class="pattern-chip {{activePattern == 'heart' ? 'pattern-chip-selected' : ''}}" onclick="SetPattern('heart')"><text class="pattern-chip-text">{{ $t("massager.patternHeart") }}</text></div>
+          <div class="pattern-chip {{activePattern == 'wave' ? 'pattern-chip-selected' : ''}}" onclick="SetPattern('wave')"><text class="pattern-chip-text">{{ $t("massager.patternWave") }}</text></div>
+        </div>
+      </div>
+      <div class="power-btn {{running ? 'power-btn-running' : ''}}" onclick="ToggleRunning">
+        <text class="power-btn-text">{{ running ? $t("massager.stop") : $t("massager.start") }}</text>
+      </div>
+      <text class="massager-hint">{{ $t("massager.hint") }}</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import vibrator from "@system.vibrator"
+
+// 节奏 = [震动模式, 间隔毫秒] 循环；定时器在停止/隐藏/销毁时必须清空（内存规范）
+const PATTERNS = {
+  short: [["short", 400], ["pause", 300]],
+  long: [["long", 900], ["pause", 400]],
+  heart: [["short", 150], ["pause", 120], ["short", 150], ["pause", 700]],
+  wave: [["short", 120], ["pause", 100], ["short", 120], ["pause", 100], ["short", 120], ["pause", 100], ["long", 700], ["pause", 500]]
+}
+
+export default {
+  private: {
+    scrclass: "",
+    activePattern: "short",
+    running: false
+  },
+  onInit() {
+    global.ui.InitPage(this)
+  },
+  onHide() {
+    this.Stop()
+  },
+  onDestroy() {
+    this.Stop()
+  },
+  SetPattern(pattern) {
+    const wasRunning = this.running
+    this.activePattern = pattern
+    if (wasRunning) {
+      // 切换节奏时重新起拍
+      this.StopTimer()
+      this.RunPattern()
+    }
+  },
+  ToggleRunning() {
+    if (this.running) {
+      this.Stop()
+    } else {
+      this.running = true
+      this.RunPattern()
+    }
+  },
+  Stop() {
+    this.running = false
+    this.StopTimer()
+  },
+  StopTimer() {
+    if (this.stepTimer) {
+      clearTimeout(this.stepTimer)
+      this.stepTimer = null
+    }
+  },
+  RunPattern() {
+    const steps = PATTERNS[this.activePattern]
+    let index = 0
+    const next = () => {
+      if (!this.running) {
+        return
+      }
+      const step = steps[index]
+      index = (index + 1) % steps.length
+      if (step[0] != "pause") {
+        try {
+          vibrator.vibrate({ mode: step[0] })
+        } catch (e) {}
+      }
+      this.stepTimer = setTimeout(next, step[1])
+    }
+    next()
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./massager.less";
+</style>

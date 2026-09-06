@@ -18,7 +18,17 @@
         "muyu": "电子木鱼",
         "muyuDescription": "敲一敲，攒功德",
         "worldclock": "世界时钟",
-        "worldclockDescription": "十个城市的当前时间"
+        "worldclockDescription": "全球国家当前时间",
+        "password": "密码生成器",
+        "passwordDescription": "自定义长度与字符集",
+        "random": "随机决策",
+        "randomDescription": "骰子、硬币与随机数",
+        "battery": "电量与设备",
+        "batteryDescription": "电量和设备信息",
+        "meal": "今日饮食",
+        "mealDescription": "今天吃点什么",
+        "massager": "振动按摩器",
+        "massagerDescription": "四种节奏震动"
     },
     "muyu": {
         "title": "电子木鱼",
@@ -26,6 +36,55 @@
         "total": "累计",
         "reset": "清零",
         "resetConfirm": "确认清零？"
+    },
+    "password": {
+        "title": "密码生成器",
+        "length": "长度",
+        "upper": "大写",
+        "lower": "小写",
+        "digit": "数字",
+        "symbol": "符号",
+        "regenerate": "重新生成"
+    },
+    "random": {
+        "title": "随机决策",
+        "dice": "骰子",
+        "coin": "硬币",
+        "number": "随机数",
+        "min": "最小",
+        "max": "最大",
+        "coinHeads": "正面",
+        "coinTails": "反面",
+        "hint": "点击结果摇一摇"
+    },
+    "battery": {
+        "title": "电量与设备",
+        "refresh": "刷新",
+        "chargingYes": "充电中",
+        "chargingNo": "未充电",
+        "unknown": "无法获取",
+        "model": "型号",
+        "system": "系统",
+        "network": "网络",
+        "serial": "序列号"
+    },
+    "meal": {
+        "title": "今日饮食",
+        "breakfast": "早餐",
+        "lunch": "午餐",
+        "dinner": "晚餐",
+        "suggest": "建议吃",
+        "again": "换一个"
+    },
+    "massager": {
+        "title": "振动按摩器",
+        "patternShort": "短震",
+        "patternLong": "长震",
+        "patternHeart": "心跳",
+        "patternWave": "波浪",
+        "start": "开始",
+        "stop": "停止",
+        "hint": "离开页面自动停止"
     },
     "worldclock": {
         "title": "世界时钟",

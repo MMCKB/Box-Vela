@@ -1,0 +1,112 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <title-bar title="random.title"></title-bar>
+    <div class="random-content">
+      <div class="mode-row">
+        <div class="mode-chip {{activeMode == 'dice' ? 'mode-chip-selected' : ''}}" onclick="SetMode('dice')"><text class="mode-chip-text">{{ $t("random.dice") }}</text></div>
+        <div class="mode-chip {{activeMode == 'coin' ? 'mode-chip-selected' : ''}}" onclick="SetMode('coin')"><text class="mode-chip-text">{{ $t("random.coin") }}</text></div>
+        <div class="mode-chip {{activeMode == 'number' ? 'mode-chip-selected' : ''}}" onclick="SetMode('number')"><text class="mode-chip-text">{{ $t("random.number") }}</text></div>
+      </div>
+
+      <div class="result-area" onclick="Roll">
+        <text class="result-main">{{ resultMain }}</text>
+        <text class="result-sub" if="{{activeMode == 'number'}}">{{ $t("random.min") }} {{ numberMin }} · {{ $t("random.max") }} {{ numberMax }}</text>
+      </div>
+
+      <div class="range-row" if="{{activeMode == 'number'}}">
+        <div class="range-btn" onclick="DecreaseMin"><text class="range-btn-text">-</text></div>
+        <text class="range-value">{{ $t("random.min") }} {{ numberMin }}</text>
+        <div class="range-btn" onclick="IncreaseMin"><text class="range-btn-text">+</text></div>
+      </div>
+      <div class="range-row" if="{{activeMode == 'number'}}">
+        <div class="range-btn" onclick="DecreaseMax"><text class="range-btn-text">-</text></div>
+        <text class="range-value">{{ $t("random.max") }} {{ numberMax }}</text>
+        <div class="range-btn" onclick="IncreaseMax"><text class="range-btn-text">+</text></div>
+      </div>
+
+      <text class="roll-hint">{{ $t("random.hint") }}</text>
+    </div>
+  </div>
+</template>
+
+<script>
+// 滚动动画的帧定时器，页面销毁时必须清空（内存规范）
+export default {
+  private: {
+    scrclass: "",
+    activeMode: "dice",
+    resultMain: "5",
+    numberMin: 1,
+    numberMax: 100,
+    rollTimers: []
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    this.Settle()
+  },
+  onDestroy() {
+    this.ClearRollTimers()
+  },
+  ClearRollTimers() {
+    const timers = this.rollTimers || []
+    for (let i = 0; i < timers.length; i++) {
+      clearTimeout(timers[i])
+    }
+    this.rollTimers = []
+  },
+  SetMode(mode) {
+    this.ClearRollTimers()
+    this.activeMode = mode
+    this.Settle()
+  },
+  Settle() {
+    if (this.activeMode == "dice") {
+      this.resultMain = String(1 + Math.floor(Math.random() * 6))
+    } else if (this.activeMode == "coin") {
+      this.resultMain = Math.random() < 0.5 ? this.$t("random.coinHeads") : this.$t("random.coinTails")
+    } else {
+      const min = Math.min(this.numberMin, this.numberMax)
+      const max = Math.max(this.numberMin, this.numberMax)
+      this.resultMain = String(min + Math.floor(Math.random() * (max - min + 1)))
+    }
+  },
+  Roll() {
+    this.ClearRollTimers()
+    // 先快速跳动几帧再落定，营造摇动效果
+    for (let i = 1; i <= 5; i++) {
+      this.rollTimers.push(setTimeout(() => {
+        this.Settle()
+      }, i * 60))
+    }
+    this.rollTimers.push(setTimeout(() => {
+      this.rollTimers = []
+    }, 620))
+  },
+  Adjust(field, delta) {
+    const next = this[field] + delta
+    if (next >= 0 && next <= 999) {
+      this[field] = next
+      this.Settle()
+    }
+  },
+  DecreaseMin() {
+    this.Adjust("numberMin", -1)
+  },
+  IncreaseMin() {
+    this.Adjust("numberMin", 1)
+  },
+  DecreaseMax() {
+    this.Adjust("numberMax", -1)
+  },
+  IncreaseMax() {
+    this.Adjust("numberMax", 1)
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./random.less";
+</style>

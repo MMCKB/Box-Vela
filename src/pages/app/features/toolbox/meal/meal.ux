@@ -1,0 +1,95 @@
+<import name="title-bar" src="@components/TitleBar/TitleBar.ux"></import>
+
+<template>
+  <div class="page">
+    <title-bar title="meal.title"></title-bar>
+    <div class="meal-content">
+      <div class="meal-tabs">
+        <div class="meal-tab {{activeMeal == 'breakfast' ? 'meal-tab-selected' : ''}}" onclick="SetMeal('breakfast')"><text class="meal-tab-text">{{ $t("meal.breakfast") }}</text></div>
+        <div class="meal-tab {{activeMeal == 'lunch' ? 'meal-tab-selected' : ''}}" onclick="SetMeal('lunch')"><text class="meal-tab-text">{{ $t("meal.lunch") }}</text></div>
+        <div class="meal-tab {{activeMeal == 'dinner' ? 'meal-tab-selected' : ''}}" onclick="SetMeal('dinner')"><text class="meal-tab-text">{{ $t("meal.dinner") }}</text></div>
+      </div>
+      <div class="meal-card" onclick="PickOne">
+        <text class="meal-label">{{ $t("meal.suggest") }}</text>
+        <text class="meal-name">{{ mealName }}</text>
+        <text class="meal-name-sub">{{ mealNameEn }}</text>
+      </div>
+      <div class="again-btn" onclick="PickOne"><text class="again-btn-text">{{ $t("meal.again") }}</text></div>
+    </div>
+  </div>
+</template>
+
+<script>
+// 本地语料，无网络依赖；不重复连选同一项
+const MEALS = {
+  breakfast: [
+    { zh: "豆浆油条", en: "Soy milk & youtiao" },
+    { zh: "小笼包", en: "Soup dumplings" },
+    { zh: "皮蛋瘦肉粥", en: "Pork & egg congee" },
+    { zh: "煎饼果子", en: "Jianbing" },
+    { zh: "三明治", en: "Sandwich" },
+    { zh: "燕麦酸奶", en: "Oatmeal & yogurt" },
+    { zh: "茶叶蛋配包子", en: "Egg & baozi" },
+    { zh: "热干面", en: "Hot dry noodles" }
+  ],
+  lunch: [
+    { zh: "番茄牛腩饭", en: "Beef & tomato rice" },
+    { zh: "麻辣香锅", en: "Spicy stir-fry pot" },
+    { zh: "兰州拉面", en: "Lanzhou noodles" },
+    { zh: "黄焖鸡米饭", en: "Braised chicken rice" },
+    { zh: "照烧鸡排饭", en: "Teriyaki chicken rice" },
+    { zh: "麻婆豆腐盖饭", en: "Mapo tofu rice" },
+    { zh: "饺子", en: "Dumplings" },
+    { zh: "沙拉轻食", en: "Salad bowl" }
+  ],
+  dinner: [
+    { zh: "火锅", en: "Hotpot" },
+    { zh: "烧烤", en: "BBQ skewers" },
+    { zh: "螺蛳粉", en: "Luosifen noodles" },
+    { zh: "咖喱鸡肉饭", en: "Curry chicken rice" },
+    { zh: "日式拉面", en: "Ramen" },
+    { zh: "海鲜粥", en: "Seafood congee" },
+    { zh: "酸菜鱼", en: "Fish with pickles" },
+    { zh: "蛋炒饭", en: "Egg fried rice" }
+  ]
+}
+
+export default {
+  private: {
+    scrclass: "",
+    activeMeal: "lunch",
+    mealName: "",
+    mealNameEn: "",
+    lastIndex: -1
+  },
+  onInit() {
+    global.ui.InitPage(this)
+    this.SetMeal("lunch")
+  },
+  SetMeal(meal) {
+    this.activeMeal = meal
+    this.lastIndex = -1
+    this.PickOne()
+  },
+  PickOne() {
+    const list = MEALS[this.activeMeal]
+    let index = Math.floor(Math.random() * list.length)
+    if (list.length > 1) {
+      // 避免连续两次一样
+      while (index == this.lastIndex) {
+        index = Math.floor(Math.random() * list.length)
+      }
+    }
+    this.lastIndex = index
+    const useEnglish = this.$t("worldclock.langCode") == "en"
+    const item = list[index]
+    this.mealName = useEnglish ? item.en : item.zh
+    this.mealNameEn = useEnglish ? item.zh : item.en
+  }
+}
+</script>
+
+<style lang="less">
+@import "@less/global.less";
+@import "./meal.less";
+</style>

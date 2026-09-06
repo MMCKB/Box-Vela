@@ -44,6 +44,9 @@
         },
         {
             "name": "system.network"
+        },
+        {
+            "name": "system.battery"
         }
     ],
     "permissions": [],
@@ -110,6 +113,21 @@
             },
             "pages/app/features/toolbox/worldclock/editor": {
                 "component": "editor"
+            },
+            "pages/app/features/toolbox/password": {
+                "component": "password"
+            },
+            "pages/app/features/toolbox/random": {
+                "component": "random"
+            },
+            "pages/app/features/toolbox/battery": {
+                "component": "battery"
+            },
+            "pages/app/features/toolbox/meal": {
+                "component": "meal"
+            },
+            "pages/app/features/toolbox/massager": {
+                "component": "massager"
             }
         }
     }

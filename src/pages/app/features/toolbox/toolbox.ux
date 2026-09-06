@@ -4,7 +4,7 @@
   <div class="page">
     <scroll class="scroll {{scrclass}}" scroll-y="true" bounces="false">
       <title-bar title="toolbox.title"></title-bar>
-      <div class="toolbox-content" if="{{viewMode == 'list'}}">
+      <div class="toolbox-content">
         <div class="toolbox-card" onclick="OpenWeather">
           <div class="toolbox-card-icon toolbox-weather-icon"><text class="toolbox-card-icon-text">☁</text></div>
           <div class="toolbox-card-copy">
@@ -126,106 +126,18 @@
           <text class="toolbox-card-arrow">›</text>
         </div>
       </div>
-      <div class="grid-content" if="{{viewMode == 'grid'}}">
-        <div class="grid-tile" for="{{tools}}" onclick="OpenGrid($item)">
-          <div class="grid-tile-icon" style="background-color: {{ $item.iconBg }};">
-            <text class="grid-tile-icon-text" style="color: {{ $item.iconFg }};">{{ $item.icon }}</text>
-          </div>
-          <text class="grid-tile-name">{{ $item.name }}</text>
-        </div>
-      </div>
       <text style="height: 30px"></text>
     </scroll>
-    <div class="view-toggle" onclick="ToggleView">
-      <text class="view-toggle-text">{{ viewMode == 'list' ? $t("toolbox.viewGrid") : $t("toolbox.viewList") }}</text>
-    </div>
   </div>
 </template>
 
 <script>
 import router from "@system.router"
-import { storage } from "@src/tsimports"
 import { lockNotesSession } from "@src/notes.ts"
-
-const VIEW_KEY = "toolbox_view"
-
-// 工具清单：单列卡片为历史模板，双列宫格与路由由此驱动
-const TOOLS = [
-  { key: "weather", icon: "☁", iconBg: "#3D3D3D", iconFg: "#FFD34E" },
-  { key: "calculator", icon: "+", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "game2048", icon: "2048", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "ai", icon: "AI", iconBg: "#3A2734", iconFg: "#FF9CBE" },
-  { key: "todo", icon: "✓", iconBg: "#2E4042", iconFg: "#99E8D7" },
-  { key: "countdown", icon: "日", iconBg: "#49323B", iconFg: "#FFB2CA" },
-  { key: "notes", icon: "▤", iconBg: "#2C3B42", iconFg: "#A8E9DD" },
-  { key: "muyu", icon: "木", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "worldclock", icon: "⊕", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "password", icon: "密", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "random", icon: "随", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "battery", icon: "电", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "speedtest", icon: "速", iconBg: "#4A3A1A", iconFg: "#FFD34E" },
-  { key: "meal", icon: "食", iconBg: "#FF7DA8", iconFg: "#FFFFFF" },
-  { key: "massager", icon: "振", iconBg: "#FF7DA8", iconFg: "#FFFFFF" }
-]
-
-const ROUTES = {
-  weather: "pages/app/features/toolbox/weather",
-  calculator: "pages/app/features/toolbox/calculator",
-  game2048: "pages/app/features/toolbox/game2048",
-  ai: "pages/app/features/toolbox/ai",
-  todo: "pages/app/features/toolbox/todo",
-  countdown: "pages/app/features/toolbox/countdown",
-  notes: "pages/app/features/toolbox/notes",
-  muyu: "pages/app/features/toolbox/muyu",
-  worldclock: "pages/app/features/toolbox/worldclock",
-  password: "pages/app/features/toolbox/password",
-  random: "pages/app/features/toolbox/random",
-  battery: "pages/app/features/toolbox/battery",
-  speedtest: "pages/app/features/toolbox/speedtest",
-  meal: "pages/app/features/toolbox/meal",
-  massager: "pages/app/features/toolbox/massager"
-}
 
 export default {
   private: {
-    scrclass: "",
-    viewMode: "list",
-    tools: []
-  },
-  onInit() {
-    const useEnglish = this.$t("worldclock.langCode") == "en"
-    this.tools = TOOLS.map(tool => ({
-      key: tool.key,
-      icon: tool.icon,
-      iconBg: tool.iconBg,
-      iconFg: tool.iconFg,
-      name: this.$t("toolbox." + tool.key)
-    }))
-    storage.get({
-      key: VIEW_KEY,
-      success: data => {
-        if (data == "grid") {
-          this.viewMode = "grid"
-        }
-      },
-      fail: () => {}
-    })
-  },
-  ToggleView() {
-    this.viewMode = this.viewMode == "list" ? "grid" : "list"
-    storage.set({
-      key: VIEW_KEY,
-      value: this.viewMode
-    })
-  },
-  OpenGrid(item) {
-    if (!ROUTES[item.key]) {
-      return
-    }
-    if (item.key == "notes") {
-      lockNotesSession()
-    }
-    router.push({ uri: ROUTES[item.key] })
+    scrclass: ""
   },
   OpenWeather() {
     router.push({

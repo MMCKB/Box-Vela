@@ -30,9 +30,7 @@
         "massager": "振动按摩器",
         "massagerDescription": "四种节奏震动",
         "speedtest": "网速测试",
-        "speedtestDescription": "测当前网络速度",
-        "viewGrid": "宫",
-        "viewList": "列"
+        "speedtestDescription": "测当前网络速度"
     },
     "muyu": {
         "title": "电子木鱼",
@@ -110,7 +108,9 @@
         "phasePing": "正在测延迟…",
         "phaseDownload": "正在测下载…",
         "fail": "测速失败，请检查网络",
-        "last": "上次"
+        "last": "上次",
+        "server": "节点",
+        "switching": "切换节点…"
     },
     "worldclock": {
         "title": "世界时钟",

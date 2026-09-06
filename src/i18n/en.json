@@ -30,9 +30,7 @@
         "massager": "Vibration",
         "massagerDescription": "Four vibration patterns",
         "speedtest": "Speed Test",
-        "speedtestDescription": "Measure network speed",
-        "viewGrid": "Grid",
-        "viewList": "List"
+        "speedtestDescription": "Measure network speed"
     },
     "muyu": {
         "title": "Wooden Fish",
@@ -110,7 +108,9 @@
         "phasePing": "Pinging…",
         "phaseDownload": "Downloading…",
         "fail": "Failed, check network",
-        "last": "Last"
+        "last": "Last",
+        "server": "Node",
+        "switching": "Switching…"
     },
     "worldclock": {
         "title": "World Clock",
